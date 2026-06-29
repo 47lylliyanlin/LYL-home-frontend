@@ -86,9 +86,13 @@ body { background: #FDF6F0; font-family: -apple-system, 'PingFang SC', 'Helvetic
 .bwrap { display: flex; flex-direction: column; }
 .msg-row.user .bwrap { align-items: flex-end; }
 
-.bubble { padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.68; }
+.bubble { padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.68; white-space: pre-line; }
 .ai-b { background: #fff; border: 1px solid #F5C4B3; border-bottom-left-radius: 4px; color: #4A1B0C; }
 .user-b { background: #F5C4B3; border-bottom-right-radius: 4px; color: #4A1B0C; }
+.bilingual-stack { display: flex; flex-direction: column; gap: 12px; }
+.bilingual-pair { display: flex; flex-direction: column; gap: 3px; }
+.bilingual-en { color: #3F170B; font-size: 14px; line-height: 1.55; font-weight: 500; }
+.bilingual-zh { color: #A85E43; font-size: 13px; line-height: 1.55; }
 /* 语音消息气泡 */
 .voice-b { display: flex; align-items: center; gap: 10px; padding: 10px 14px; position: relative; }
 .voice-play-btn { width: 28px; height: 28px; border-radius: 50%; background: #FFFFFF; border: 2px solid #D85A30; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
@@ -413,6 +417,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ========== 配置 ==========
 const API_BASE = 'http://localhost:8000';
+const SESSION_STORAGE_KEY = 'kiro_session_id';
+const RECENT_TURNS_KEY = 'kiro_recent_turns_count';
+const RECENT_CHAR_LIMIT_KEY = 'kiro_recent_char_limit';
+
+function createSessionId() {
+  const randomPart = Math.random().toString(36).slice(2, 10);
+  return `web_${Date.now()}_${randomPart}`;
+}
+
+function getSessionId() {
+  let sessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+  if (!sessionId) {
+    sessionId = createSessionId();
+    localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  }
+  return sessionId;
+}
+
+function getMemoryContextSettings() {
+  const turns = parseInt(localStorage.getItem(RECENT_TURNS_KEY) || '4', 10);
+  const chars = parseInt(localStorage.getItem(RECENT_CHAR_LIMIT_KEY) || '180', 10);
+  return {
+    recent_turns_count: Number.isFinite(turns) ? Math.max(0, Math.min(turns, 20)) : 4,
+    recent_char_limit: Number.isFinite(chars) ? Math.max(40, Math.min(chars, 1000)) : 180
+  };
+}
+
+function startNewSession() {
+  const sessionId = createSessionId();
+  localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  clearChatHistory();
+  return sessionId;
+}
+
+let currentSessionId = getSessionId();
 
 // ========== DOM元素 ==========
 const micBtn = document.getElementById('micBtn');
@@ -526,7 +565,48 @@ function clearChatHistory() {
   chatBox.innerHTML = '';
 }
 
-function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, audioUrl = null) {
+
+function renderBilingualBubble(bubble, text, bilingualParts) {
+  if (!Array.isArray(bilingualParts) || bilingualParts.length === 0) {
+    bubble.textContent = text;
+    return;
+  }
+
+  const stack = document.createElement('div');
+  stack.className = 'bilingual-stack';
+
+  bilingualParts.forEach(part => {
+    const english = (part.english || '').trim();
+    const chinese = (part.chinese || '').trim();
+    if (!english && !chinese) return;
+
+    const pair = document.createElement('div');
+    pair.className = 'bilingual-pair';
+
+    if (english) {
+      const en = document.createElement('div');
+      en.className = 'bilingual-en';
+      en.textContent = english;
+      pair.appendChild(en);
+    }
+
+    if (chinese) {
+      const zh = document.createElement('div');
+      zh.className = 'bilingual-zh';
+      zh.textContent = chinese;
+      pair.appendChild(zh);
+    }
+
+    stack.appendChild(pair);
+  });
+
+  if (stack.childNodes.length > 0) {
+    bubble.appendChild(stack);
+  } else {
+    bubble.textContent = text;
+  }
+}
+function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, audioUrl = null, bilingualParts = null) {
   const msgRow = document.createElement('div');
   msgRow.className = isUser ? 'msg-row user' : 'msg-row ai';
 
@@ -583,7 +663,7 @@ function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, au
   else if (!isUser && audioUrl) {
     const bubble = document.createElement('div');
     bubble.className = 'bubble ai-b';
-    bubble.textContent = text;
+    renderBilingualBubble(bubble, text, bilingualParts);
     bwrap.appendChild(bubble);
 
     // 添加播放控制条
@@ -687,7 +767,11 @@ function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, au
   else {
     const bubble = document.createElement('div');
     bubble.className = isUser ? 'bubble user-b' : 'bubble ai-b';
-    bubble.textContent = text;
+    if (!isUser) {
+      renderBilingualBubble(bubble, text, bilingualParts);
+    } else {
+      bubble.textContent = text;
+    }
     bwrap.appendChild(bubble);
   }
 
@@ -768,7 +852,11 @@ async function sendVoiceMessage(audioBlob) {
 
   try {
     const formData = new FormData();
+    const memorySettings = getMemoryContextSettings();
     formData.append('audio', audioBlob, 'recording.wav');
+    formData.append('session_id', currentSessionId);
+    formData.append('recent_turns_count', String(memorySettings.recent_turns_count));
+    formData.append('recent_char_limit', String(memorySettings.recent_char_limit));
 
     const response = await fetch(`${API_BASE}/api/voice-chat`, {
       method: 'POST',
@@ -792,7 +880,7 @@ async function sendVoiceMessage(audioBlob) {
     removeLoadingMessage(loadingMsgRow);
 
     // 显示AI回复（文字 + 播放控制条）
-    addMessage(data.assistant_text, false, false, 0, data.assistant_audio_url);
+    addMessage(data.assistant_text, false, false, 0, data.assistant_audio_url, data.assistant_text_parts);
 
     hideStatus();
 
@@ -937,7 +1025,11 @@ async function sendTextMessage() {
     const response = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
+      body: JSON.stringify({
+        message: text,
+        session_id: currentSessionId,
+        ...getMemoryContextSettings()
+      })
     });
 
     const data = await response.json();
@@ -953,7 +1045,7 @@ async function sendTextMessage() {
     }
 
     // 显示AI回复
-    addMessage(data.reply, false, false);
+    addMessage(data.reply, false, false, 0, null, data.reply_parts);
     hideStatus();
 
   } catch (error) {
@@ -986,6 +1078,14 @@ document.querySelectorAll('.sess').forEach(s => {
     this.classList.add('active');
   });
 });
+
+const newChatBtn = document.querySelector('.new-btn');
+if (newChatBtn) {
+  newChatBtn.addEventListener('click', () => {
+    currentSessionId = startNewSession();
+    hideStatus();
+  });
+}
 
 // ========== 检查后端连接状态 ==========
 async function checkBackendStatus() {
