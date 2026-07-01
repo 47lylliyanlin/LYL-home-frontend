@@ -2,7 +2,14 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#d85a30">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kiro">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <title>小G的家 v2</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -416,7 +423,8 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
 document.addEventListener('DOMContentLoaded', function() {
 
 // ========== 配置 ==========
-const API_BASE = 'http://localhost:8000';
+const DEFAULT_API_BASE = window.location.protocol === 'file:' ? 'http://localhost:8000' : window.location.origin;
+const API_BASE = localStorage.getItem('kiro_api_base') || window.KIRO_API_BASE || DEFAULT_API_BASE;
 const SESSION_STORAGE_KEY = 'kiro_session_id';
 const RECENT_TURNS_KEY = 'kiro_recent_turns_count';
 const RECENT_CHAR_LIMIT_KEY = 'kiro_recent_char_limit';
@@ -1087,6 +1095,14 @@ if (newChatBtn) {
   });
 }
 
+// ========== PWA 安装壳 ==========
+if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(error => {
+      console.warn('Service worker 注册失败:', error);
+    });
+  });
+}
 // ========== 检查后端连接状态 ==========
 async function checkBackendStatus() {
   try {
