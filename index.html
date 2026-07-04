@@ -436,12 +436,35 @@ function createSessionId() {
   return `web_${Date.now()}_${randomPart}`;
 }
 
+function normalizeSessionId(value) {
+  return String(value || '').trim().replace(/[^A-Za-z0-9_.-]+/g, '_').slice(0, 80).replace(/^[._-]+|[._-]+$/g, '') || null;
+}
+
+function sessionIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return normalizeSessionId(params.get('session_id'));
+}
+
+function updateSessionUrl(sessionId) {
+  if (window.location.protocol === 'file:') return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('session_id', sessionId);
+  window.history.replaceState({}, '', url.toString());
+}
+
 function getSessionId() {
-  let sessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+  const urlSessionId = sessionIdFromUrl();
+  if (urlSessionId) {
+    localStorage.setItem(SESSION_STORAGE_KEY, urlSessionId);
+    return urlSessionId;
+  }
+
+  let sessionId = normalizeSessionId(localStorage.getItem(SESSION_STORAGE_KEY));
   if (!sessionId) {
     sessionId = createSessionId();
     localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
   }
+  updateSessionUrl(sessionId);
   return sessionId;
 }
 
@@ -557,9 +580,19 @@ async function callMemoryTool(name, args = {}) {
   return result;
 }
 
+function setSessionId(sessionId) {
+  const normalized = normalizeSessionId(sessionId);
+  if (!normalized) return currentSessionId;
+  localStorage.setItem(SESSION_STORAGE_KEY, normalized);
+  updateSessionUrl(normalized);
+  currentSessionId = normalized;
+  return normalized;
+}
+
 function startNewSession() {
   const sessionId = createSessionId();
   localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  updateSessionUrl(sessionId);
   clearChatHistory();
   return sessionId;
 }
@@ -579,6 +612,13 @@ window.KiroMemoryAPI = {
   clearAdminToken: () => {
     localStorage.removeItem(ADMIN_TOKEN_KEY);
     return refreshMemoryRuntimeState({ silent: true });
+  },
+  getSessionId: () => currentSessionId,
+  setSessionId: async (sessionId) => {
+    setSessionId(sessionId);
+    publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
+    await loadCloudOrLocalChatHistory({ silent: true });
+    return KiroMemoryRuntime;
   },
   startNewSession: () => {
     currentSessionId = startNewSession();
@@ -604,6 +644,8 @@ let mediaRecorder = null;
 let audioChunks = [];
 let timerInterval = null;
 let seconds = 0;
+let restoringChatHistory = false;
+let syncingChatHistory = false;
 
 // ========== 工具函数 ==========
 function formatTime(s) {
@@ -692,6 +734,45 @@ function loadChatHistory() {
   }
 }
 
+function formatHistoryTime(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+}
+
+async function loadServerChatHistory(options = {}) {
+  if (syncingChatHistory) return false;
+  syncingChatHistory = true;
+  try {
+    const data = await apiJson(`/api/sessions/${encodeURIComponent(currentSessionId)}/history?limit=80`);
+    const turns = Array.isArray(data.turns) ? data.turns : [];
+    const visibleRows = chatBox.querySelectorAll('.msg-row:not(#loading-message)').length;
+    if (turns.length === 0) return false;
+    if (options.onlyIfNewer && turns.length <= visibleRows) return true;
+
+    restoringChatHistory = true;
+    chatBox.innerHTML = '';
+    turns.forEach(item => {
+      const role = item.role === 'user' ? 'user' : 'assistant';
+      const content = String(item.content || '').trim();
+      if (!content) return;
+      addMessage(content, role === 'user', false, 0, null, null, formatHistoryTime(item.timestamp));
+    });
+    return true;
+  } catch (error) {
+    if (!options.silent) console.warn('加载云端聊天记录失败:', error);
+    return false;
+  } finally {
+    restoringChatHistory = false;
+    syncingChatHistory = false;
+  }
+}
+
+async function loadCloudOrLocalChatHistory(options = {}) {
+  const loaded = await loadServerChatHistory(options);
+  if (!loaded && !options.silent) loadChatHistory();
+}
 // 清空聊天记录
 function clearChatHistory() {
   localStorage.removeItem(CHAT_STORAGE_KEY);
@@ -739,7 +820,7 @@ function renderBilingualBubble(bubble, text, bilingualParts) {
     bubble.textContent = text;
   }
 }
-function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, audioUrl = null, bilingualParts = null) {
+function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, audioUrl = null, bilingualParts = null, timestampText = null) {
   const msgRow = document.createElement('div');
   msgRow.className = isUser ? 'msg-row user' : 'msg-row ai';
 
@@ -911,7 +992,7 @@ function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, au
   const msgTime = document.createElement('div');
   msgTime.className = 'msg-time';
   const now = new Date();
-  msgTime.textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  msgTime.textContent = timestampText || `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
 
   bwrap.appendChild(msgTime);
   msgRow.appendChild(avatar);
@@ -921,7 +1002,7 @@ function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, au
   chatBox.scrollTop = chatBox.scrollHeight;
 
   // 保存聊天记录
-  saveChatHistory();
+  if (!restoringChatHistory) saveChatHistory();
 
   return msgRow; // 返回创建的消息元素
 }
@@ -1223,6 +1304,10 @@ if (newChatBtn) {
   });
 }
 
+window.addEventListener('focus', () => {
+  loadCloudOrLocalChatHistory({ silent: true, onlyIfNewer: true });
+});
+
 // ========== PWA 安装壳 ==========
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
   window.addEventListener('load', () => {
@@ -1253,7 +1338,7 @@ setInterval(checkBackendStatus, 30000);
 setInterval(() => refreshMemoryRuntimeState({ silent: true }), MEMORY_RUNTIME_REFRESH_MS);
 
 // 加载聊天记录
-loadChatHistory();
+loadCloudOrLocalChatHistory();
 
 }); // 关闭 DOMContentLoaded
 </script>
