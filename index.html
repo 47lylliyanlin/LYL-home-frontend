@@ -513,7 +513,10 @@ async function apiJson(path, options = {}) {
   }
   if (!response.ok) {
     const message = data.error || data.detail || `${response.status} ${response.statusText}`;
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    error.data = data;
+    throw error;
   }
   return data;
 }
@@ -646,6 +649,7 @@ let timerInterval = null;
 let seconds = 0;
 let restoringChatHistory = false;
 let syncingChatHistory = false;
+let historyAuthPromptOpen = false;
 
 // ========== 工具函数 ==========
 function formatTime(s) {
@@ -741,6 +745,21 @@ function formatHistoryTime(timestamp) {
   return `${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
 }
 
+function promptForHistoryAdminToken() {
+  if (historyAuthPromptOpen) return false;
+  historyAuthPromptOpen = true;
+  try {
+    const current = (localStorage.getItem(ADMIN_TOKEN_KEY) || '').trim();
+    const token = window.prompt('请输入 Kiro 同步授权 token，用于读取云端聊天记录。', current);
+    if (token === null) return false;
+    const trimmed = token.trim();
+    if (!trimmed) return false;
+    localStorage.setItem(ADMIN_TOKEN_KEY, trimmed);
+    return true;
+  } finally {
+    historyAuthPromptOpen = false;
+  }
+}
 async function loadServerChatHistory(options = {}) {
   if (syncingChatHistory) return false;
   syncingChatHistory = true;
@@ -761,6 +780,12 @@ async function loadServerChatHistory(options = {}) {
     });
     return true;
   } catch (error) {
+    if (error.status === 401 && !options.authRetried) {
+      syncingChatHistory = false;
+      if (promptForHistoryAdminToken()) {
+        return loadServerChatHistory({ ...options, authRetried: true, silent: false });
+      }
+    }
     if (!options.silent) console.warn('加载云端聊天记录失败:', error);
     return false;
   } finally {
