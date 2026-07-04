@@ -428,6 +428,8 @@ const API_BASE = localStorage.getItem('kiro_api_base') || window.KIRO_API_BASE |
 const SESSION_STORAGE_KEY = 'kiro_session_id';
 const RECENT_TURNS_KEY = 'kiro_recent_turns_count';
 const RECENT_CHAR_LIMIT_KEY = 'kiro_recent_char_limit';
+const ADMIN_TOKEN_KEY = 'kiro_admin_token';
+const MEMORY_RUNTIME_REFRESH_MS = 60000;
 
 function createSessionId() {
   const randomPart = Math.random().toString(36).slice(2, 10);
@@ -452,6 +454,109 @@ function getMemoryContextSettings() {
   };
 }
 
+function setMemoryContextSettings(settings = {}) {
+  if (settings.recent_turns_count !== undefined) {
+    const turns = Math.max(0, Math.min(parseInt(settings.recent_turns_count, 10) || 0, 20));
+    localStorage.setItem(RECENT_TURNS_KEY, String(turns));
+  }
+  if (settings.recent_char_limit !== undefined) {
+    const chars = Math.max(40, Math.min(parseInt(settings.recent_char_limit, 10) || 180, 1000));
+    localStorage.setItem(RECENT_CHAR_LIMIT_KEY, String(chars));
+  }
+  return getMemoryContextSettings();
+}
+
+function apiHeaders(extra = {}) {
+  const headers = { ...extra };
+  const token = (localStorage.getItem(ADMIN_TOKEN_KEY) || '').trim();
+  if (token) headers['X-Kiro-Admin-Token'] = token;
+  return headers;
+}
+
+async function apiJson(path, options = {}) {
+  const init = { ...options };
+  const body = init.body;
+  const headers = apiHeaders(init.headers || {});
+  if (body && typeof body === 'object' && !(body instanceof FormData)) {
+    init.body = JSON.stringify(body);
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+  init.headers = headers;
+  const response = await fetch(`${API_BASE}${path}`, init);
+  const text = await response.text();
+  let data = {};
+  if (text) {
+    try { data = JSON.parse(text); } catch (error) { data = { raw: text }; }
+  }
+  if (!response.ok) {
+    const message = data.error || data.detail || `${response.status} ${response.statusText}`;
+    throw new Error(message);
+  }
+  return data;
+}
+
+const KiroMemoryRuntime = {
+  apiBase: API_BASE,
+  sessionId: null,
+  contextSettings: getMemoryContextSettings(),
+  mcpManifest: null,
+  pulse: null,
+  dreamCrystallization: null,
+  maintenance: null,
+  lastGatewayContext: null,
+  lastUpdatedAt: null,
+  errors: [],
+  ready: false
+};
+window.KiroMemoryRuntime = KiroMemoryRuntime;
+
+function publishMemoryRuntimeState(patch = {}) {
+  Object.assign(KiroMemoryRuntime, patch, {
+    sessionId: currentSessionId,
+    contextSettings: getMemoryContextSettings(),
+    lastUpdatedAt: new Date().toISOString()
+  });
+  window.dispatchEvent(new CustomEvent('kiro-memory-runtime-updated', { detail: KiroMemoryRuntime }));
+  return KiroMemoryRuntime;
+}
+
+async function settleRuntimeField(path, key) {
+  try {
+    const data = await apiJson(path);
+    return { key, data };
+  } catch (error) {
+    return { key, error: error.message || String(error) };
+  }
+}
+
+async function refreshMemoryRuntimeState(options = {}) {
+  const checks = await Promise.all([
+    settleRuntimeField('/api/mcp/manifest', 'mcpManifest'),
+    settleRuntimeField('/api/pulse', 'pulse'),
+    settleRuntimeField('/api/dream/crystallization/status', 'dreamCrystallization'),
+    settleRuntimeField('/api/maintenance/status', 'maintenance'),
+    settleRuntimeField('/api/gateway/last-context', 'lastGatewayContext')
+  ]);
+  const patch = { errors: [], ready: true };
+  checks.forEach(item => {
+    if (item.error) patch.errors.push({ key: item.key, message: item.error });
+    else patch[item.key] = item.data;
+  });
+  if (!options.silent && patch.errors.length) {
+    console.warn('Memory runtime partial refresh failed:', patch.errors);
+  }
+  return publishMemoryRuntimeState(patch);
+}
+
+async function callMemoryTool(name, args = {}) {
+  const result = await apiJson('/api/mcp/call', {
+    method: 'POST',
+    body: { name, arguments: args }
+  });
+  refreshMemoryRuntimeState({ silent: true });
+  return result;
+}
+
 function startNewSession() {
   const sessionId = createSessionId();
   localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
@@ -460,6 +565,26 @@ function startNewSession() {
 }
 
 let currentSessionId = getSessionId();
+publishMemoryRuntimeState({ ready: false });
+window.KiroMemoryAPI = {
+  refresh: refreshMemoryRuntimeState,
+  callTool: callMemoryTool,
+  getState: () => KiroMemoryRuntime,
+  getMemoryContextSettings,
+  setMemoryContextSettings,
+  setAdminToken: (token) => {
+    localStorage.setItem(ADMIN_TOKEN_KEY, String(token || '').trim());
+    return refreshMemoryRuntimeState({ silent: true });
+  },
+  clearAdminToken: () => {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    return refreshMemoryRuntimeState({ silent: true });
+  },
+  startNewSession: () => {
+    currentSessionId = startNewSession();
+    return publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
+  }
+};
 
 // ========== DOM元素 ==========
 const micBtn = document.getElementById('micBtn');
@@ -891,6 +1016,7 @@ async function sendVoiceMessage(audioBlob) {
     addMessage(data.assistant_text, false, false, 0, data.assistant_audio_url, data.assistant_text_parts);
 
     hideStatus();
+    refreshMemoryRuntimeState({ silent: true });
 
   } catch (error) {
     console.error('发送失败:', error);
@@ -1055,6 +1181,7 @@ async function sendTextMessage() {
     // 显示AI回复
     addMessage(data.reply, false, false, 0, null, data.reply_parts);
     hideStatus();
+    refreshMemoryRuntimeState({ silent: true });
 
   } catch (error) {
     console.error('发送失败:', error);
@@ -1091,6 +1218,7 @@ const newChatBtn = document.querySelector('.new-btn');
 if (newChatBtn) {
   newChatBtn.addEventListener('click', () => {
     currentSessionId = startNewSession();
+    publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
     hideStatus();
   });
 }
@@ -1119,8 +1247,10 @@ async function checkBackendStatus() {
 
 // 启动时检查后端状态
 checkBackendStatus();
+refreshMemoryRuntimeState({ silent: true });
 // 每30秒检查一次
 setInterval(checkBackendStatus, 30000);
+setInterval(() => refreshMemoryRuntimeState({ silent: true }), MEMORY_RUNTIME_REFRESH_MS);
 
 // 加载聊天记录
 loadChatHistory();
