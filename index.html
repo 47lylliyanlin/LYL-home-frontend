@@ -93,7 +93,9 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
 }
 .nav-item:hover { background: #fff; color: var(--coral-dark); }
 .nav-item.active { background: var(--peach); color: var(--coral-dark); }
-.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .95; }
+.nav-item.active .nav-icon { color: var(--coral); }
+.nav-icon { width: 20px; height: 20px; display: inline-grid; place-items: center; flex: 0 0 auto; color: currentColor; }
+.nav-icon .ic { width: 18px; height: 18px; stroke-width: 1.9; }
 .sidebar-spacer { flex: 1; }
 .new-btn {
   width: 100%;
@@ -253,7 +255,7 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
   min-height: 52px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: end;
+  align-items: center;
   gap: 10px;
   background: #fff;
   border: 1.5px solid var(--line);
@@ -262,28 +264,50 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
   transition: border-color .15s, box-shadow .15s;
 }
 .text-box:focus-within { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(255,107,74,.08); }
-.composer-left, .composer-actions { display: flex; align-items: center; gap: 4px; }
+.composer-left, .composer-actions { display: flex; align-items: center; gap: 7px; }
 .chat-input { min-height: 34px; max-height: 108px; border: 0; outline: 0; resize: none; background: transparent; color: var(--ink); font-size: 15px; line-height: 1.55; padding: 7px 4px; font-family: inherit; }
 .chat-input::placeholder { color: #bd8a78; }
 .sm-btn, .voice-mode-btn, .send-btn {
-  border: 0;
+  border: 1px solid transparent;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 50%;
   color: var(--muted);
-  background: transparent;
+  background: #fffaf7;
 }
-.sm-btn:hover, .voice-mode-btn:hover { background: var(--surface-soft); color: var(--coral-dark); }
-.voice-mode-btn { gap: 6px; width: auto; padding: 0 11px; font-size: 12px; font-weight: 800; color: var(--coral-dark); border: 1px solid var(--line); background: #fff8f4; }
+.sm-btn { color: #9b6b59; }
+.sm-btn:hover, .voice-mode-btn:hover { background: var(--surface-soft); color: var(--coral-dark); border-color: var(--line); }
+.voice-mode-btn { gap: 6px; width: auto; height: 38px; padding: 0 13px; border-radius: 10px; font-size: 12px; font-weight: 800; color: var(--coral-dark); border: 1px solid var(--line); background: #fff8f4; }
 .voice-mode-btn.recording { background: #d74343; border-color: #d74343; color: #fff; animation: recpulse 1s infinite; }
 @keyframes recpulse { 0%,100%{box-shadow:0 0 0 0 rgba(215,67,67,.28)} 50%{box-shadow:0 0 0 8px rgba(215,67,67,0)} }
-.send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--coral); color: #fff; flex: 0 0 auto; }
+.send-btn { width: 46px; height: 46px; border-radius: 50%; background: var(--coral); color: #fff; flex: 0 0 auto; box-shadow: 0 8px 20px rgba(255,107,74,.22); }
 .send-btn:hover { background: var(--coral-dark); }
 .mic-hint { margin-top: 8px; text-align: center; font-size: 12px; color: var(--muted); opacity: .75; }
+
+/* Section views */
+.content-view {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px clamp(22px, 4vw, 52px);
+  display: none;
+}
+.content-view.active { display: block; }
+.chat-wrap.view-mode .messages,
+.chat-wrap.view-mode .input-area { display: none; }
+.view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.view-head h2 { font-size: 24px; color: var(--ink); }
+.view-head p { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.feature-card { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 16px; display: grid; gap: 8px; }
+.feature-card h3 { font-size: 15px; color: var(--ink); }
+.feature-card p { font-size: 13px; line-height: 1.7; color: var(--muted); }
+.feature-card .mini-action { justify-self: start; border: 1px solid var(--line); background: #fffaf7; color: var(--coral-dark); border-radius: 999px; min-height: 30px; padding: 0 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.feature-card .mini-action:hover { border-color: var(--coral); background: var(--surface-soft); }
 
 /* Memory drawer */
 .memory-drawer {
@@ -320,18 +344,13 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
 .drawer-action { border: 1px solid var(--line); background: #fff; color: var(--coral-dark); border-radius: 10px; min-height: 32px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: 800; }
 .drawer-action:hover { border-color: var(--coral); }
 
-@media (max-width: 980px) {
+@media (max-width: 760px) {
   .app-shell { padding: 0; }
   .app-frame { border-radius: 0; border: 0; grid-template-columns: 68px minmax(0, 1fr); }
   .sidebar { width: 68px; padding: 12px 8px; align-items: center; }
   .brand-mini .logo-name, .nav-label, .new-btn span, .side-status { display: none; }
   .new-btn { min-width: 42px; width: 42px; padding: 0; }
   .nav-item { justify-content: center; padding: 0; }
-  .nav-dot { width: 18px; height: 18px; background: transparent; display: grid; place-items: center; }
-  .nav-item:nth-child(1) .nav-dot::before { content: '●'; }
-  .nav-item:nth-child(2) .nav-dot::before { content: '◇'; }
-  .nav-item:nth-child(3) .nav-dot::before { content: '♙'; }
-  .nav-item:nth-child(4) .nav-dot::before { content: '⚙'; }
   .memory-drawer { position: fixed; inset: 0 0 0 auto; width: min(360px, 92vw); z-index: 20; box-shadow: -18px 0 60px rgba(107,52,30,.18); }
   .memory-drawer.closed { transform: translateX(100%); margin-right: 0; }
   .chat-header { padding: 14px 16px; min-height: 72px; }
@@ -343,6 +362,7 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
   .input-area { padding: 12px 12px max(14px, env(safe-area-inset-bottom)); }
   .text-box { grid-template-columns: auto minmax(0, 1fr); }
   .composer-actions { grid-column: 1 / -1; justify-content: flex-end; border-top: 1px solid #f6e0d7; padding-top: 6px; }
+  .feature-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
@@ -373,10 +393,10 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
       </button>
 
       <nav class="nav-list">
-        <button class="nav-item active" type="button"><span class="nav-dot"></span><span class="nav-label">对话</span></button>
-        <button class="nav-item" type="button"><span class="nav-dot"></span><span class="nav-label">记忆</span></button>
-        <button class="nav-item" type="button"><span class="nav-dot"></span><span class="nav-label">画像</span></button>
-        <button class="nav-item" type="button"><span class="nav-dot"></span><span class="nav-label">设置</span></button>
+        <button class="nav-item active" type="button" data-view="chat" aria-current="page"><span class="nav-icon"><svg class="ic"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span><span class="nav-label">对话</span></button>
+        <button class="nav-item" type="button" data-view="memory"><span class="nav-icon"><svg class="ic"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 4v16"/><path d="M15 8h2"/><path d="M15 12h2"/><path d="M15 16h2"/></svg></span><span class="nav-label">记忆</span></button>
+        <button class="nav-item" type="button" data-view="profile"><span class="nav-icon"><svg class="ic"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="nav-label">画像</span></button>
+        <button class="nav-item" type="button" data-view="settings"><span class="nav-icon"><svg class="ic"><circle cx="12" cy="12" r="3.5"/><path d="M19 12h2"/><path d="M3 12h2"/><path d="m17 7 1.4-1.4"/><path d="M5.6 18.4 7 17"/><path d="M12 3V1"/><path d="M12 23v-2"/><path d="m17 17 1.4 1.4"/><path d="M5.6 5.6 7 7"/></svg></span><span class="nav-label">设置</span></button>
       </nav>
 
       <div class="sidebar-spacer"></div>
@@ -419,6 +439,38 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
         <span id="statusText">正在处理…</span>
       </div>
 
+
+
+      <section class="content-view" id="memoryView" aria-label="记忆页">
+        <div class="view-head"><div><h2>记忆</h2><p>查看长期记忆、候选审批、词图和维护入口。第一版先放管理入口，不把调试 JSON 搬进主聊区。</p></div></div>
+        <div class="feature-grid">
+          <article class="feature-card"><h3>记忆库</h3><p>查看已保存的长期记忆，后续支持搜索、筛选和多选维护。</p><button class="mini-action" type="button" data-panel-action="memory-library">查看入口</button></article>
+          <article class="feature-card"><h3>候选审批</h3><p>AI 提取出的 profile_fact 或重要候选，需要确认后才进入稳定画像。</p><button class="mini-action" type="button" data-panel-action="memory-candidates">查看候选</button></article>
+          <article class="feature-card"><h3>词图概览</h3><p>Word Map 只作为检索辅助预留，不直接塞进 prompt。</p><button class="mini-action" type="button" data-panel-action="word-map">打开词图</button></article>
+          <article class="feature-card"><h3>维护</h3><p>重建向量、归档预览和备份检查放在这里，避免干扰聊天。</p><button class="mini-action" type="button" data-panel-action="maintenance">维护入口</button></article>
+        </div>
+      </section>
+
+      <section class="content-view" id="profileView" aria-label="画像页">
+        <div class="view-head"><div><h2>画像</h2><p>区分用户事实、Kiro 状态、关系天气和最近连续性，避免把状态误写成事实。</p></div></div>
+        <div class="feature-grid">
+          <article class="feature-card"><h3>用户画像</h3><p>只放证据充分、已经确认的长期事实。</p></article>
+          <article class="feature-card"><h3>Kiro 状态</h3><p>记录 AI 的当前状态、表达偏好和内在节奏。</p></article>
+          <article class="feature-card"><h3>关系天气</h3><p>作为回复后的关系状态评估，不作为用户事实注入。</p></article>
+          <article class="feature-card"><h3>最近连续性</h3><p>保留上一个 session 的轻量接续信息。</p></article>
+        </div>
+      </section>
+
+      <section class="content-view" id="settingsView" aria-label="设置页">
+        <div class="view-head"><div><h2>设置</h2><p>模型路由、语音、多端同步和记忆策略会集中到这里，不挤占主聊天。</p></div></div>
+        <div class="feature-grid">
+          <article class="feature-card"><h3>模型与路由</h3><p>后续支持 Gemini / GPT / Claude / GLM 的切换与健康状态。</p></article>
+          <article class="feature-card"><h3>语音与输入</h3><p>管理录音、转写、发送方式和文件入口。</p></article>
+          <article class="feature-card"><h3>多端同步</h3><p>管理 session_id、同步链接和 PWA 使用方式。</p></article>
+          <article class="feature-card"><h3>记忆策略</h3><p>配置短期上下文、醒醒锚点和高级调试入口。</p></article>
+        </div>
+      </section>
+
       <div class="messages" id="messages" aria-live="polite"></div>
 
       <section class="input-area" aria-label="发送消息">
@@ -450,7 +502,7 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
                 <span id="micBtnLabel">语音</span>
               </button>
               <button class="send-btn" id="sendBtn" type="button" title="发送">
-                <svg class="ic" style="width:17px;height:17px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>
+                <svg class="ic" style="width:18px;height:18px"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>
               </button>
             </div>
           </div>
@@ -712,6 +764,7 @@ window.KiroMemoryAPI = {
     return KiroMemoryRuntime;
   },
   startNewSession: () => {
+    switchMainView('chat');
     currentSessionId = startNewSession();
     return publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
   }
@@ -729,6 +782,13 @@ const statusText = document.getElementById('statusText');
 const statusSpin = document.getElementById('statusSpin');
 const chatInput = document.getElementById('chatInput');
 const chatBox = document.getElementById('messages');
+const chatWrap = document.querySelector('.chat-wrap');
+const navItems = Array.from(document.querySelectorAll('.nav-item[data-view]'));
+const contentViews = {
+  memory: document.getElementById('memoryView'),
+  profile: document.getElementById('profileView'),
+  settings: document.getElementById('settingsView')
+};
 const appFrame = document.getElementById('appFrame');
 const memoryToggle = document.getElementById('memoryToggle');
 const memoryDrawer = document.getElementById('memoryDrawer');
@@ -1494,9 +1554,33 @@ document.querySelectorAll('.sess').forEach(s => {
   });
 });
 
+function switchMainView(view) {
+  const isChat = view === 'chat';
+  navItems.forEach(item => {
+    const active = item.dataset.view === view;
+    item.classList.toggle('active', active);
+    if (active) item.setAttribute('aria-current', 'page');
+    else item.removeAttribute('aria-current');
+  });
+  Object.entries(contentViews).forEach(([key, el]) => {
+    if (el) el.classList.toggle('active', key === view);
+  });
+  if (chatWrap) chatWrap.classList.toggle('view-mode', !isChat);
+}
+navItems.forEach(item => {
+  item.addEventListener('click', () => switchMainView(item.dataset.view || 'chat'));
+});
+
+document.querySelectorAll('[data-panel-action]').forEach(button => {
+  button.addEventListener('click', () => {
+    showStatus('这个入口已预留，后续会接入对应管理功能。', false);
+    setTimeout(hideStatus, 1600);
+  });
+});
 const newChatBtn = document.querySelector('.new-btn');
 if (newChatBtn) {
   newChatBtn.addEventListener('click', () => {
+    switchMainView('chat');
     currentSessionId = startNewSession();
     publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
     hideStatus();
