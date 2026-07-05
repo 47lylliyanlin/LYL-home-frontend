@@ -450,6 +450,131 @@ body.focus-mode {
 body.focus-mode .app-shell { padding: 0; }
 body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
 
+
+/* Memory page P1 */
+.memory-workspace { display: grid; gap: 14px; }
+.memory-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.memory-stat {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+}
+.memory-stat strong { font-size: 22px; line-height: 1; color: var(--ink); }
+.memory-stat span { font-size: 12px; color: var(--muted); }
+.memory-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+.memory-search, .memory-filter {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  padding: 0 11px;
+  outline: 0;
+  font-size: 13px;
+}
+.memory-search:focus, .memory-filter:focus { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(255,107,74,.08); }
+.memory-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, .92fr) minmax(300px, 1.08fr);
+  gap: 12px;
+  min-height: 380px;
+}
+.memory-list, .memory-detail {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.86);
+  min-height: 0;
+}
+.memory-list {
+  overflow: auto;
+  display: grid;
+  align-content: start;
+}
+.memory-row {
+  border: 0;
+  border-bottom: 1px solid #f6ddd4;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  padding: 12px 13px;
+  display: grid;
+  gap: 6px;
+}
+.memory-row:hover, .memory-row.active { background: #fff6f1; }
+.memory-row.active { box-shadow: inset 3px 0 0 var(--coral); }
+.memory-row-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.memory-row-title { font-size: 13px; font-weight: 850; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.memory-row-preview { font-size: 12px; line-height: 1.55; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.memory-kind {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: #25785f;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 850;
+}
+.memory-kind.candidate { background: #fff2df; color: #9b5a0c; }
+.memory-kind.concept { background: var(--lavender-soft); color: #6a4fd1; }
+.memory-kind.archive { background: #f2f2f2; color: #68605b; }
+.memory-detail { padding: 15px; display: grid; align-content: start; gap: 12px; }
+.memory-detail h3 { font-size: 18px; color: var(--ink); line-height: 1.25; }
+.memory-detail-meta { display: flex; flex-wrap: wrap; gap: 7px; }
+.meta-pill { border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; font-size: 11px; color: var(--muted); background: #fffaf7; font-weight: 800; }
+.memory-preview-box {
+  border: 1px solid #f2d6cc;
+  border-radius: 10px;
+  background: #fffdfb;
+  padding: 12px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  max-height: 260px;
+  overflow: auto;
+}
+.memory-empty {
+  padding: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.memory-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.memory-action {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffaf7;
+  color: var(--coral-dark);
+  padding: 0 11px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+}
+.memory-action.primary { background: var(--coral); border-color: var(--coral); color: #fff; }
+.memory-action:hover { border-color: var(--coral); }
+.memory-maintenance-row { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 980px) {
+  .memory-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .memory-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .memory-toolbar { grid-template-columns: 1fr; }
+}
+
 /* Section views */
 .content-view {
   flex: 1;
@@ -652,12 +777,43 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
 
 
       <section class="content-view" id="memoryView" aria-label="记忆页">
-        <div class="view-head"><div><h2>记忆</h2><p>查看长期记忆、候选审批、词图和维护入口。第一版先放管理入口，不把调试 JSON 搬进主聊区。</p></div></div>
-        <div class="feature-grid">
-          <article class="feature-card"><h3>记忆库</h3><p>查看已保存的长期记忆，后续支持搜索、筛选和多选维护。</p><button class="mini-action" type="button" data-panel-action="memory-library">查看入口</button></article>
-          <article class="feature-card"><h3>候选审批</h3><p>AI 提取出的 profile_fact 或重要候选，需要确认后才进入稳定画像。</p><button class="mini-action" type="button" data-panel-action="memory-candidates">查看候选</button></article>
-          <article class="feature-card"><h3>词图概览</h3><p>Word Map 只作为检索辅助预留，不直接塞进 prompt。</p><button class="mini-action" type="button" data-panel-action="word-map">打开词图</button></article>
-          <article class="feature-card"><h3>维护</h3><p>重建向量、归档预览和备份检查放在这里，避免干扰聊天。</p><button class="mini-action" type="button" data-panel-action="maintenance">维护入口</button></article>
+        <div class="view-head">
+          <div>
+            <h2>记忆</h2>
+            <p>先展示安全表面：统计、候选、词图概念和归档预览。完整 bucket 列表后续接专门接口。</p>
+          </div>
+          <button class="drawer-action" id="memoryPageRefreshBtn" type="button">刷新</button>
+        </div>
+        <div class="memory-workspace">
+          <div class="memory-summary-grid" id="memorySummaryGrid">
+            <section class="memory-stat"><strong>--</strong><span>全部记忆</span></section>
+            <section class="memory-stat"><strong>--</strong><span>候选</span></section>
+            <section class="memory-stat"><strong>--</strong><span>词图节点</span></section>
+            <section class="memory-stat"><strong>--</strong><span>归档预览</span></section>
+          </div>
+          <div class="memory-toolbar">
+            <input class="memory-search" id="memorySearchInput" type="search" placeholder="搜索标题、摘要、概念...">
+            <select class="memory-filter" id="memoryTypeFilter" aria-label="记忆类型筛选">
+              <option value="all">全部</option>
+              <option value="candidate">候选</option>
+              <option value="concept">词图概念</option>
+              <option value="archive">归档预览</option>
+            </select>
+            <button class="drawer-action" id="memoryRebuildWordMapBtn" type="button">重建词图</button>
+          </div>
+          <div class="memory-layout">
+            <div class="memory-list" id="memoryList">
+              <div class="memory-empty">正在读取记忆状态...</div>
+            </div>
+            <aside class="memory-detail" id="memoryDetail">
+              <h3>选择一条记忆</h3>
+              <p class="memory-empty">左侧会显示候选、词图概念和归档预览。点击条目后在这里查看详情。</p>
+            </aside>
+          </div>
+          <div class="memory-maintenance-row">
+            <button class="memory-action" id="memoryVectorRebuildBtn" type="button">重建向量</button>
+            <button class="memory-action" id="memoryArchivePreviewBtn" type="button">刷新归档预览</button>
+          </div>
         </div>
       </section>
 
@@ -1057,6 +1213,15 @@ const moreMenu = document.getElementById('moreMenu');
 const copySessionMenuBtn = document.getElementById('copySessionMenuBtn');
 const openMemoryMenuBtn = document.getElementById('openMemoryMenuBtn');
 const clearLocalChatBtn = document.getElementById('clearLocalChatBtn');
+const memoryPageRefreshBtn = document.getElementById('memoryPageRefreshBtn');
+const memorySearchInput = document.getElementById('memorySearchInput');
+const memoryTypeFilter = document.getElementById('memoryTypeFilter');
+const memoryList = document.getElementById('memoryList');
+const memoryDetail = document.getElementById('memoryDetail');
+const memorySummaryGrid = document.getElementById('memorySummaryGrid');
+const memoryRebuildWordMapBtn = document.getElementById('memoryRebuildWordMapBtn');
+const memoryVectorRebuildBtn = document.getElementById('memoryVectorRebuildBtn');
+const memoryArchivePreviewBtn = document.getElementById('memoryArchivePreviewBtn');
 
 // ========== 状态 ==========
 let recording = false;
@@ -1067,6 +1232,212 @@ let seconds = 0;
 let restoringChatHistory = false;
 let syncingChatHistory = false;
 let historyAuthPromptOpen = false;
+let memoryPageItems = [];
+let selectedMemoryItemId = null;
+let memoryPageLoaded = false;
+
+
+function truncateText(value, limit = 180) {
+  const text = String(value || '').trim();
+  return text.length > limit ? text.slice(0, limit).trim() + '...' : text;
+}
+
+function formatMemoryDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 16);
+  return date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function normalizeMemoryPageItems(payload = {}) {
+  const candidates = (payload.candidates || []).map(item => ({
+    id: 'candidate:' + (item.name || item.id || item.title),
+    kind: 'candidate',
+    title: item.title || item.id || '未命名候选',
+    subtitle: item.status || 'pending',
+    preview: item.preview || item.reason || '',
+    raw: item,
+    meta: [
+      item.suggested_type && '类型 ' + item.suggested_type,
+      item.status && '状态 ' + item.status,
+      item.gate_code && '门禁 ' + item.gate_code,
+      item.created_at && '创建 ' + formatMemoryDate(item.created_at)
+    ].filter(Boolean)
+  }));
+  const concepts = ((payload.wordMap || {}).top_concepts || []).map(item => ({
+    id: 'concept:' + (item.word || item),
+    kind: 'concept',
+    title: item.word || String(item),
+    subtitle: 'Word Map',
+    preview: `bucket: ${item.bucket_count || 0} · moment: ${item.moment_count || 0} · score: ${Number(item.concept_score || item.weight || 0).toFixed(2)}`,
+    raw: item,
+    meta: [
+      '弱召回辅助',
+      item.bucket_count !== undefined && 'bucket ' + item.bucket_count,
+      item.moment_count !== undefined && 'moment ' + item.moment_count
+    ].filter(Boolean)
+  }));
+  const archive = (payload.archivePreview || []).map(item => ({
+    id: 'archive:' + (item.id || item.memory_id || item.title),
+    kind: 'archive',
+    title: item.title || item.name || item.id || item.memory_id || '归档候选',
+    subtitle: '归档预览',
+    preview: item.preview || item.reason || item.content || '',
+    raw: item,
+    meta: [
+      item.type && '类型 ' + item.type,
+      item.score !== undefined && '分数 ' + item.score,
+      item.created && '创建 ' + formatMemoryDate(item.created)
+    ].filter(Boolean)
+  }));
+  return [...candidates, ...concepts, ...archive];
+}
+
+function renderMemorySummary(payload = {}) {
+  if (!memorySummaryGrid) return;
+  const counts = (payload.pulse || {}).memory_counts || {};
+  const wordMap = payload.wordMap || {};
+  const candidates = payload.candidates || [];
+  const archivePreview = payload.archivePreview || [];
+  const stats = [
+    { value: counts.total ?? '--', label: '全部记忆' },
+    { value: candidates.length, label: '候选' },
+    { value: wordMap.node_count ?? (wordMap.top_concepts || []).length ?? '--', label: '词图节点' },
+    { value: archivePreview.length, label: '归档预览' },
+  ];
+  memorySummaryGrid.innerHTML = stats.map(item => `<section class="memory-stat"><strong>${item.value}</strong><span>${item.label}</span></section>`).join('');
+}
+
+function filteredMemoryItems() {
+  const query = (memorySearchInput?.value || '').trim().toLowerCase();
+  const type = memoryTypeFilter?.value || 'all';
+  return memoryPageItems.filter(item => {
+    if (type !== 'all' && item.kind !== type) return false;
+    if (!query) return true;
+    return [item.title, item.subtitle, item.preview, ...(item.meta || [])].join('\n').toLowerCase().includes(query);
+  });
+}
+
+function renderMemoryList() {
+  if (!memoryList) return;
+  const items = filteredMemoryItems();
+  if (!items.length) {
+    memoryList.innerHTML = '<div class="memory-empty">没有匹配的记忆条目。</div>';
+    renderMemoryDetail(null);
+    return;
+  }
+  if (!selectedMemoryItemId || !items.some(item => item.id === selectedMemoryItemId)) selectedMemoryItemId = items[0].id;
+  memoryList.innerHTML = '';
+  items.forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'memory-row' + (item.id === selectedMemoryItemId ? ' active' : '');
+    button.dataset.memoryItemId = item.id;
+    button.innerHTML = `
+      <div class="memory-row-head">
+        <span class="memory-row-title"></span>
+        <span class="memory-kind ${item.kind}">${item.kind === 'candidate' ? '候选' : item.kind === 'concept' ? '概念' : '归档'}</span>
+      </div>
+      <div class="memory-row-preview"></div>
+    `;
+    button.querySelector('.memory-row-title').textContent = item.title;
+    button.querySelector('.memory-row-preview').textContent = truncateText(item.preview || item.subtitle, 110);
+    button.addEventListener('click', () => {
+      selectedMemoryItemId = item.id;
+      renderMemoryList();
+      renderMemoryDetail(item);
+    });
+    memoryList.appendChild(button);
+  });
+  renderMemoryDetail(items.find(item => item.id === selectedMemoryItemId) || items[0]);
+}
+
+function renderMemoryDetail(item) {
+  if (!memoryDetail) return;
+  if (!item) {
+    memoryDetail.innerHTML = '<h3>没有可显示的条目</h3><p class="memory-empty">换一个筛选条件，或者刷新记忆状态。</p>';
+    return;
+  }
+  memoryDetail.innerHTML = '';
+  const title = document.createElement('h3');
+  title.textContent = item.title;
+  const meta = document.createElement('div');
+  meta.className = 'memory-detail-meta';
+  (item.meta || []).forEach(value => {
+    const pill = document.createElement('span');
+    pill.className = 'meta-pill';
+    pill.textContent = value;
+    meta.appendChild(pill);
+  });
+  const preview = document.createElement('div');
+  preview.className = 'memory-preview-box';
+  preview.textContent = item.preview || '暂无摘要。';
+  memoryDetail.appendChild(title);
+  memoryDetail.appendChild(meta);
+  memoryDetail.appendChild(preview);
+  if (item.kind === 'candidate') {
+    const actions = document.createElement('div');
+    actions.className = 'memory-actions';
+    const canReview = item.raw?.status === 'pending';
+    actions.innerHTML = `
+      <button class="memory-action primary" type="button" data-candidate-action="approve" ${canReview ? '' : 'disabled'}>确认候选</button>
+      <button class="memory-action" type="button" data-candidate-action="reject" ${canReview ? '' : 'disabled'}>忽略候选</button>
+    `;
+    actions.querySelectorAll('[data-candidate-action]').forEach(button => {
+      button.addEventListener('click', () => reviewMemoryCandidate(item, button.dataset.candidateAction));
+    });
+    memoryDetail.appendChild(actions);
+  }
+}
+
+async function loadMemoryPageData(options = {}) {
+  if (!memoryList || !memorySummaryGrid) return;
+  if (!options.silent) memoryList.innerHTML = '<div class="memory-empty">正在读取记忆状态...</div>';
+  try {
+    const [pulse, candidatesData, wordMap, archiveData] = await Promise.all([
+      apiJson('/api/pulse'),
+      apiJson('/api/memory/candidates'),
+      apiJson('/api/memory/word-map'),
+      apiJson('/api/maintenance/archive-preview?limit=12')
+    ]);
+    if (!pulse.memory_counts && pulse.raw) {
+      throw new Error('当前 API_BASE 没有返回记忆接口，请确认后端地址。');
+    }
+    const payload = {
+      pulse,
+      candidates: candidatesData.candidates || [],
+      wordMap,
+      archivePreview: archiveData.items || []
+    };
+    renderMemorySummary(payload);
+    memoryPageItems = normalizeMemoryPageItems(payload);
+    renderMemoryList();
+    memoryPageLoaded = true;
+    if (!options.silent) {
+      showStatus('记忆页已刷新', false);
+      setTimeout(hideStatus, 1200);
+    }
+  } catch (error) {
+    memoryList.innerHTML = '<div class="memory-empty">读取失败：' + (error.message || error) + '</div>';
+    showStatus('记忆页读取失败：' + (error.message || error), true);
+  }
+}
+
+async function reviewMemoryCandidate(item, action) {
+  const name = item.raw?.name || item.raw?.id;
+  if (!name) return;
+  try {
+    await apiJson(`/api/memory/candidates/${encodeURIComponent(name)}/${action}`, {
+      method: 'POST',
+      body: { reviewer: 'web', reason: action === 'reject' ? 'Rejected from Kiro Web memory page' : '' }
+    });
+    showStatus(action === 'approve' ? '候选已确认' : '候选已忽略', false);
+    await loadMemoryPageData({ silent: true });
+    refreshMemoryRuntimeState({ silent: true });
+  } catch (error) {
+    showStatus('候选处理失败：' + (error.message || error), true);
+  }
+}
 
 function updateChatEmptyState() {
   if (!chatBox || !emptyState) return;
@@ -1914,6 +2285,7 @@ function switchMainView(view) {
     if (el) el.classList.toggle('active', key === view);
   });
   if (chatWrap) chatWrap.classList.toggle('view-mode', !isChat);
+  if (view === 'memory' && !memoryPageLoaded) loadMemoryPageData({ silent: true });
 }
 navItems.forEach(item => {
   item.addEventListener('click', () => switchMainView(item.dataset.view || 'chat'));
@@ -2025,6 +2397,44 @@ document.addEventListener('keydown', event => {
 document.querySelectorAll('[data-starter]').forEach(button => {
   button.addEventListener('click', () => fillStarterPrompt(button.dataset.starter || ''));
 });
+
+if (memoryPageRefreshBtn) {
+  memoryPageRefreshBtn.addEventListener('click', () => loadMemoryPageData({ silent: false }));
+}
+if (memorySearchInput) {
+  memorySearchInput.addEventListener('input', renderMemoryList);
+}
+if (memoryTypeFilter) {
+  memoryTypeFilter.addEventListener('change', renderMemoryList);
+}
+if (memoryRebuildWordMapBtn) {
+  memoryRebuildWordMapBtn.addEventListener('click', async () => {
+    try {
+      showStatus('正在重建词图...', false);
+      await apiJson('/api/memory/word-map/rebuild', { method: 'POST' });
+      await loadMemoryPageData({ silent: true });
+      showStatus('词图已重建', false);
+      setTimeout(hideStatus, 1200);
+    } catch (error) {
+      showStatus('重建词图失败：' + (error.message || error), true);
+    }
+  });
+}
+if (memoryVectorRebuildBtn) {
+  memoryVectorRebuildBtn.addEventListener('click', async () => {
+    try {
+      showStatus('正在重建向量...', false);
+      await apiJson('/api/memory/vector/rebuild', { method: 'POST' });
+      showStatus('向量已重建', false);
+      setTimeout(hideStatus, 1200);
+    } catch (error) {
+      showStatus('重建向量失败：' + (error.message || error), true);
+    }
+  });
+}
+if (memoryArchivePreviewBtn) {
+  memoryArchivePreviewBtn.addEventListener('click', () => loadMemoryPageData({ silent: false }));
+}
 
 document.querySelectorAll('[data-panel-action]').forEach(button => {
   button.addEventListener('click', () => {
