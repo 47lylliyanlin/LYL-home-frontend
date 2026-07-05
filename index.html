@@ -12,409 +12,497 @@
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <title>小G的家 v2</title>
 <style>
+:root {
+  --bg: #fff8f4;
+  --surface: #fffdfb;
+  --surface-soft: #fff2ec;
+  --line: #f3cdbf;
+  --line-strong: #edb9a6;
+  --coral: #ff6b4a;
+  --coral-dark: #b44627;
+  --peach: #ffe1d5;
+  --teal: #5fb99a;
+  --teal-soft: #e7f6ef;
+  --lavender: #a78bfa;
+  --lavender-soft: #f2ecff;
+  --ink: #2a211d;
+  --muted: #8b6f63;
+  --shadow: 0 18px 50px rgba(107, 52, 30, 0.10);
+  --radius: 8px;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #FDF6F0; font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+html, body { height: 100%; }
+body {
+  background: radial-gradient(circle at top left, #fff0e8 0, #fff8f4 32%, #fffdfb 100%);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  overflow: hidden;
+}
+button, textarea, input { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.app-shell { height: 100vh; padding: 18px; display: grid; }
+.app-frame {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 352px;
+  background: rgba(255, 253, 251, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+}
+.app-frame.drawer-closed { grid-template-columns: 150px minmax(0, 1fr) 0; }
+.model-pill.offline .green-dot { background: #d74343; }
 
-/* ===== 顶部导航 ===== */
-.topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 56px; background: #FFF0E8; border-bottom: 1px solid #F5C4B3; flex-shrink: 0; }
-.topbar-left { display: flex; align-items: center; gap: 10px; }
-.logo-av { width: 34px; height: 34px; border-radius: 50%; background: #F5C4B3; display: flex; align-items: center; justify-content: center; font-size: 17px; border: 2px solid #F0997B; }
-.logo-name { font-size: 16px; font-weight: 700; color: #993C1D; }
-
-/* 连接状态 */
-.conn-status { display: flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
-.conn-status.online { background: #E1F5EE; color: #0F6E56; }
-.conn-status.offline { background: #FCEBEB; color: #A32D2D; }
-.conn-status.connecting { background: #FAEEDA; color: #854F0B; }
-.conn-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.conn-status.online .conn-dot { background: #1D9E75; }
-.conn-status.offline .conn-dot { background: #E24B4A; }
-.conn-status.connecting .conn-dot { background: #EF9F27; animation: pulse 1s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-.topbar-right { display: flex; align-items: center; gap: 8px; }
-.model-pill { background: #FAECE7; border: 1px solid #F5C4B3; border-radius: 20px; padding: 5px 13px; font-size: 12px; color: #712B13; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-.icon-btn { background: none; border: none; cursor: pointer; color: #D85A30; padding: 6px; border-radius: 9px; display: flex; align-items: center; transition: background 0.12s; }
-.icon-btn:hover { background: #FAECE7; }
-
-/* ===== 主体 ===== */
-.main { display: flex; flex: 1; overflow: hidden; }
-
-/* ===== 侧边栏 ===== */
-.sidebar { width: 220px; flex-shrink: 0; background: #FFF5F0; border-right: 1px solid #F5C4B3; display: flex; flex-direction: column; overflow: hidden; }
-.sidebar-header { padding: 14px 12px 8px; }
-.new-btn { width: 100%; padding: 8px 12px; border-radius: 11px; background: #F5C4B3; border: none; cursor: pointer; color: #4A1B0C; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; font-family: inherit; transition: background 0.12s; }
-.new-btn:hover { background: #F0997B; color: #fff; }
-.sidebar-label { font-size: 11px; color: #D85A30; opacity: 0.55; padding: 10px 14px 5px; letter-spacing: 0.4px; }
-.sess-list { flex: 1; overflow-y: auto; padding: 0 6px 10px; }
-.sess-list::-webkit-scrollbar { width: 3px; }
-.sess-list::-webkit-scrollbar-thumb { background: #F5C4B3; border-radius: 3px; }
-.sess { padding: 8px 10px; border-radius: 9px; cursor: pointer; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #4A1B0C; margin-bottom: 1px; transition: background 0.1s; }
-.sess:hover { background: #FAECE7; }
-.sess.active { background: #F5C4B3; }
-.sess-icon { font-size: 14px; flex-shrink: 0; }
-.sess-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sess-time { font-size: 11px; color: #D85A30; opacity: 0.45; flex-shrink: 0; }
-
-/* ===== 对话区 ===== */
-.chat-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-.chat-header { padding: 12px 28px; border-bottom: 1px solid #F5C4B3; background: #FFFAF7; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.ch-info { display: flex; align-items: center; gap: 10px; }
-.ch-av { width: 36px; height: 36px; border-radius: 50%; background: #F5C4B3; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #F0997B; }
-.ch-name { font-size: 15px; font-weight: 600; color: #993C1D; }
-.ch-status { font-size: 12px; color: #D85A30; display: flex; align-items: center; gap: 4px; margin-top: 1px; }
-.green-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; display: inline-block; }
-
-/* 加载状态条 */
-.status-bar { padding: 7px 28px; background: #FAEEDA; border-bottom: 1px solid #FAC775; font-size: 12px; color: #633806; display: flex; align-items: center; gap: 8px; }
-.status-bar.hidden { display: none; }
-.status-bar.error { background: #FCEBEB; border-color: #F7C1C1; color: #791F1F; }
-.spin { width: 14px; height: 14px; border: 2px solid #FAC775; border-top-color: #EF9F27; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
-.spin.err { border-color: #F7C1C1; border-top-color: #E24B4A; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* 消息列表 */
-.messages { flex: 1; overflow-y: auto; padding: 20px 48px; display: flex; flex-direction: column; gap: 16px; }
-.messages::-webkit-scrollbar { width: 4px; }
-.messages::-webkit-scrollbar-thumb { background: #F5C4B3; border-radius: 4px; }
-
-.date-badge { text-align: center; }
-.date-badge span { background: #F5C4B3; color: #712B13; font-size: 11px; padding: 3px 13px; border-radius: 20px; }
-
-.msg-row { display: flex; gap: 9px; align-items: flex-end; }
-.msg-row.user { flex-direction: row-reverse; margin-left: auto; max-width: 75%; }
-.msg-row.ai { max-width: 75%; }
-
-.m-av { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; }
-.ai-av2 { background: #FAECE7; border: 1.5px solid #F5C4B3; }
-.user-av2 { background: #E1F5EE; border: 1.5px solid #9FE1CB; }
-
-.bwrap { display: flex; flex-direction: column; }
-.msg-row.user .bwrap { align-items: flex-end; }
-
-.bubble { padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.68; white-space: pre-line; }
-.ai-b { background: #fff; border: 1px solid #F5C4B3; border-bottom-left-radius: 4px; color: #4A1B0C; }
-.user-b { background: #F5C4B3; border-bottom-right-radius: 4px; color: #4A1B0C; }
-.bilingual-stack { display: flex; flex-direction: column; gap: 12px; }
-.bilingual-pair { display: flex; flex-direction: column; gap: 3px; }
-.bilingual-en { color: #3F170B; font-size: 14px; line-height: 1.55; font-weight: 500; }
-.bilingual-zh { color: #A85E43; font-size: 13px; line-height: 1.55; }
-/* 语音消息气泡 */
-.voice-b { display: flex; align-items: center; gap: 10px; padding: 10px 14px; position: relative; }
-.voice-play-btn { width: 28px; height: 28px; border-radius: 50%; background: #FFFFFF; border: 2px solid #D85A30; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
-.voice-play-btn:hover { background: #FFF5F2; transform: scale(1.05); }
-.voice-play-btn:active { transform: scale(0.95); }
-.voice-play-btn .ic { fill: #D85A30; }
-.wave { display: flex; align-items: center; gap: 2px; height: 20px; }
-.wave span { display: block; width: 3px; border-radius: 3px; background: #D85A30; opacity: 0.5; }
-.wave span:nth-child(1) { height: 8px; }
-.wave span:nth-child(2) { height: 14px; }
-.wave span:nth-child(3) { height: 18px; }
-.wave span:nth-child(4) { height: 12px; }
-.wave span:nth-child(5) { height: 16px; }
-.wave span:nth-child(6) { height: 10px; }
-.wave span:nth-child(7) { height: 6px; }
-.voice-dur { font-size: 12px; color: #993C1D; font-weight: 500; }
-
-/* 播放控制条 */
-.play-bar {
-  margin-top: 8px;
+/* Sidebar */
+.sidebar {
+  min-width: 0;
+  background: rgba(255, 246, 241, 0.82);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px;
+  gap: 18px;
+}
+.brand-mini { display: flex; align-items: center; gap: 10px; min-height: 42px; }
+.logo-av, .ch-av, .m-av {
+  background: linear-gradient(145deg, #d89b65, #9e5f37);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.logo-av { width: 38px; height: 38px; border-radius: 50%; }
+.logo-name { font-size: 18px; line-height: 1; font-weight: 800; color: var(--coral); letter-spacing: 0; }
+.nav-list { display: grid; gap: 8px; }
+.nav-item {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px;
-  background: #FFFFFF;
-  border: 1px solid #F5C4B3;
-  border-radius: 20px;
-  max-width: 320px;
+  padding: 0 12px;
+  font-weight: 650;
+  font-size: 14px;
+  transition: background .14s ease, color .14s ease, transform .14s ease;
 }
-
-/* 用户播放条（粉色主题） */
-.user-play-bar {
-  background: #FAECE7;
-  border: 1px solid #F5C4B3;
-  margin-top: 0;
-}
-
-.user-play-bar .play-btn {
-  background: #D85A30;
-}
-
-.user-play-bar .play-btn:hover {
-  background: #993C1D;
-}
-
-.user-play-bar .wave-bar {
-  background: #F5C4B3;
-}
-
-.user-play-bar .wave-bar.active {
-  background: #D85A30;
-}
-
-.user-play-bar .play-time {
-  color: #993C1D;
-}
-
-.play-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #D85A30;
-  border: none;
-  cursor: pointer;
+.nav-item:hover { background: #fff; color: var(--coral-dark); }
+.nav-item.active { background: var(--peach); color: var(--coral-dark); }
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .95; }
+.sidebar-spacer { flex: 1; }
+.new-btn {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--coral-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s;
+  gap: 7px;
+  min-height: 38px;
+  cursor: pointer;
+  font-weight: 700;
 }
-
-.play-btn:hover {
-  background: #993C1D;
-  transform: scale(1.05);
+.side-status {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.74);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
 }
+.side-status-title { display: flex; align-items: center; gap: 7px; color: var(--coral); font-weight: 800; }
+.side-status-title .green-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+.side-status p { font-size: 12px; line-height: 1.55; color: var(--muted); }
 
-.play-btn:active {
-  transform: scale(0.95);
-}
-
-/* 播放按钮图标颜色 */
-.play-btn .ic {
-  fill: #FFFFFF;
-}
-
-/* 波形进度容器 */
-.play-prog {
-  flex: 1;
-  height: 28px;
+/* Chat */
+.chat-wrap { min-width: 0; display: flex; flex-direction: column; background: rgba(255, 253, 251, .72); }
+.chat-header {
+  min-height: 84px;
+  padding: 18px 26px;
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
-  gap: 2px;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(255, 253, 251, 0.86);
+}
+.ch-info { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.ch-av { width: 48px; height: 48px; border-radius: 50%; flex: 0 0 auto; }
+.ch-title-row { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
+.ch-name { font-size: 28px; font-weight: 850; color: var(--coral); letter-spacing: 0; line-height: 1; }
+.ch-heart { color: var(--coral); font-size: 22px; }
+.model-pill, .memory-toggle, .icon-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
 }
-
-/* 波形条 */
-.wave-bar {
-  flex: 1;
-  background: #F5C4B3;
-  border-radius: 2px;
-  transition: all 0.1s;
-  min-width: 2px;
-}
-
-.wave-bar.active {
-  background: #D85A30;
-}
-
-.wave-bar:hover {
-  background: #E8A593;
-}
-
-.play-time {
+.model-pill .green-dot, .conn-dot, .green-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); display: inline-block; }
+.memory-toggle { color: var(--coral-dark); border-color: var(--coral); }
+.memory-toggle.active { background: var(--coral); color: #fff; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn { width: 34px; padding: 0; justify-content: center; color: var(--muted); }
+.icon-btn:hover, .model-pill:hover, .memory-toggle:hover { border-color: var(--coral); }
+.status-bar {
+  padding: 9px 26px;
+  background: #fff7df;
+  border-bottom: 1px solid #f1d78b;
   font-size: 12px;
-  color: #993C1D;
-  font-weight: 500;
-  white-space: nowrap;
-  min-width: 40px;
-  text-align: right;
+  color: #76510d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.status-bar.hidden { display: none; }
+.status-bar.error { background: #fff0f0; border-color: #f3b4b4; color: #842424; }
+.spin { width: 14px; height: 14px; border: 2px solid #f1d78b; border-top-color: var(--coral); border-radius: 50%; animation: spin .75s linear infinite; }
+.spin.err { border-color: #f3b4b4; border-top-color: #d74343; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px clamp(22px, 4vw, 52px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.messages::-webkit-scrollbar { width: 5px; }
+.messages::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; }
+.msg-row { display: flex; gap: 12px; align-items: flex-end; max-width: min(760px, 82%); }
+.msg-row.user { flex-direction: row-reverse; margin-left: auto; }
+.msg-row.ai { margin-right: auto; }
+.m-av { width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; }
+.user-av2 { background: linear-gradient(145deg, #85cfb4, #3b967a); }
+.bwrap { min-width: 0; display: flex; flex-direction: column; }
+.msg-row.user .bwrap { align-items: flex-end; }
+.bubble {
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.72;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.ai-b { background: #fff; border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 4px; }
+.user-b { background: var(--peach); border: 1px solid #ffc7b4; color: var(--ink); border-bottom-right-radius: 4px; }
+.bilingual-stack { display: flex; flex-direction: column; gap: 12px; }
+.bilingual-pair { display: flex; flex-direction: column; gap: 3px; }
+.bilingual-en { color: #3b2017; font-size: 14px; line-height: 1.55; font-weight: 600; }
+.bilingual-zh { color: var(--muted); font-size: 13px; line-height: 1.55; }
+.msg-time { font-size: 11px; color: var(--muted); opacity: .68; margin-top: 4px; padding: 0 3px; }
+.typing { display: flex; align-items: center; gap: 4px; padding: 12px 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; border-bottom-left-radius: 4px; width: fit-content; }
+.td { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); animation: blink 1.3s infinite; }
+.td:nth-child(2) { animation-delay: .2s; }
+.td:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%,80%,100%{opacity:.25} 40%{opacity:1} }
+.play-bar { margin-top: 8px; display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: #fff; border: 1px solid var(--line); border-radius: 999px; max-width: 320px; }
+.user-play-bar { background: #fff2ec; margin-top: 0; }
+.play-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--coral); border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; flex: 0 0 auto; }
+.play-btn:hover { background: var(--coral-dark); }
+.play-prog { flex: 1; height: 26px; display: flex; align-items: center; gap: 2px; cursor: pointer; }
+.wave-bar { flex: 1; background: var(--line); border-radius: 2px; min-width: 2px; transition: all .1s; }
+.wave-bar.active { background: var(--coral); }
+.play-time { font-size: 12px; color: var(--muted); min-width: 40px; text-align: right; }
+
+/* Composer */
+.input-area { padding: 16px 26px 20px; border-top: 1px solid var(--line); background: rgba(255, 253, 251, .92); }
+.rec-status {
+  margin: 0 0 10px;
+  border: 1px solid #f2b7b7;
+  background: #fff2f2;
+  color: #8d2a2a;
+  border-radius: 10px;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.rec-status.hidden { display: none; }
+.rec-wave { display: flex; align-items: center; gap: 3px; height: 24px; }
+.rw { display: block; width: 3px; border-radius: 4px; background: #d74343; animation: rwave .8s ease-in-out infinite; }
+.rw:nth-child(1), .rw:nth-child(7) { height: 8px; }
+.rw:nth-child(2), .rw:nth-child(6) { height: 14px; animation-delay: .1s; }
+.rw:nth-child(3), .rw:nth-child(5) { height: 22px; animation-delay: .2s; }
+.rw:nth-child(4) { height: 18px; animation-delay: .3s; }
+@keyframes rwave { 0%,100%{transform:scaleY(.45)} 50%{transform:scaleY(1)} }
+.rec-info { display: flex; align-items: center; gap: 10px; }
+.rec-label { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.rec-red-dot { width: 8px; height: 8px; border-radius: 50%; background: #d74343; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.rec-timer { font-size: 13px; font-variant-numeric: tabular-nums; }
+.input-row { display: flex; align-items: stretch; gap: 0; }
+.text-box {
+  flex: 1;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 8px 8px 10px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.text-box:focus-within { border-color: var(--coral); box-shadow: 0 0 0 4px rgba(255,107,74,.08); }
+.composer-left, .composer-actions { display: flex; align-items: center; gap: 4px; }
+.chat-input { min-height: 34px; max-height: 108px; border: 0; outline: 0; resize: none; background: transparent; color: var(--ink); font-size: 15px; line-height: 1.55; padding: 7px 4px; font-family: inherit; }
+.chat-input::placeholder { color: #bd8a78; }
+.sm-btn, .voice-mode-btn, .send-btn {
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--muted);
+  background: transparent;
+}
+.sm-btn:hover, .voice-mode-btn:hover { background: var(--surface-soft); color: var(--coral-dark); }
+.voice-mode-btn { gap: 6px; width: auto; padding: 0 11px; font-size: 12px; font-weight: 800; color: var(--coral-dark); border: 1px solid var(--line); background: #fff8f4; }
+.voice-mode-btn.recording { background: #d74343; border-color: #d74343; color: #fff; animation: recpulse 1s infinite; }
+@keyframes recpulse { 0%,100%{box-shadow:0 0 0 0 rgba(215,67,67,.28)} 50%{box-shadow:0 0 0 8px rgba(215,67,67,0)} }
+.send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--coral); color: #fff; flex: 0 0 auto; }
+.send-btn:hover { background: var(--coral-dark); }
+.mic-hint { margin-top: 8px; text-align: center; font-size: 12px; color: var(--muted); opacity: .75; }
+
+/* Memory drawer */
+.memory-drawer {
+  min-width: 0;
+  border-left: 1px solid var(--line);
+  background: rgba(255,253,251,.92);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: margin-right .18s ease, opacity .18s ease;
+}
+.memory-drawer.closed { margin-right: -352px; opacity: 0; pointer-events: none; }
+.memory-drawer-header { min-height: 84px; padding: 24px 18px 14px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.memory-drawer-title h2 { font-size: 22px; line-height: 1; color: var(--ink); }
+.memory-drawer-title p { margin-top: 8px; font-size: 12px; color: var(--muted); }
+.drawer-close { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 8px; }
+.drawer-close:hover { background: var(--surface-soft); color: var(--coral-dark); }
+.memory-drawer-body { min-height: 0; overflow-y: auto; padding: 14px 16px 20px; display: grid; gap: 12px; }
+.memory-card { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 13px 14px; display: grid; gap: 8px; }
+.memory-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.memory-card h3 { font-size: 15px; color: var(--ink); }
+.memory-card p, .memory-card li { font-size: 12px; line-height: 1.65; color: var(--muted); }
+.status-chip { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: 800; background: var(--teal-soft); color: #25785f; white-space: nowrap; }
+.status-chip.warn { background: #fff4d9; color: #93650c; }
+.status-chip.dream { background: var(--lavender-soft); color: #6a4fd1; }
+.tool-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tool-chip { border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; font-size: 11px; color: var(--muted); background: #fffaf7; font-weight: 700; }
+.context-control { display: grid; grid-template-columns: 48px 1fr auto; align-items: center; gap: 8px; }
+.context-control strong { font-size: 12px; color: var(--ink); }
+.context-value { font-size: 12px; color: var(--coral-dark); font-weight: 800; min-width: 40px; text-align: right; }
+.context-bar { height: 4px; border-radius: 999px; background: #f0d8cf; overflow: hidden; }
+.context-bar span { display: block; height: 100%; background: var(--coral); border-radius: inherit; }
+.drawer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.drawer-action { border: 1px solid var(--line); background: #fff; color: var(--coral-dark); border-radius: 10px; min-height: 32px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: 800; }
+.drawer-action:hover { border-color: var(--coral); }
+
+@media (max-width: 980px) {
+  .app-shell { padding: 0; }
+  .app-frame { border-radius: 0; border: 0; grid-template-columns: 68px minmax(0, 1fr); }
+  .sidebar { width: 68px; padding: 12px 8px; align-items: center; }
+  .brand-mini .logo-name, .nav-label, .new-btn span, .side-status { display: none; }
+  .new-btn { min-width: 42px; width: 42px; padding: 0; }
+  .nav-item { justify-content: center; padding: 0; }
+  .nav-dot { width: 18px; height: 18px; background: transparent; display: grid; place-items: center; }
+  .nav-item:nth-child(1) .nav-dot::before { content: '●'; }
+  .nav-item:nth-child(2) .nav-dot::before { content: '◇'; }
+  .nav-item:nth-child(3) .nav-dot::before { content: '♙'; }
+  .nav-item:nth-child(4) .nav-dot::before { content: '⚙'; }
+  .memory-drawer { position: fixed; inset: 0 0 0 auto; width: min(360px, 92vw); z-index: 20; box-shadow: -18px 0 60px rgba(107,52,30,.18); }
+  .memory-drawer.closed { transform: translateX(100%); margin-right: 0; }
+  .chat-header { padding: 14px 16px; min-height: 72px; }
+  .ch-av { width: 40px; height: 40px; }
+  .ch-name { font-size: 22px; }
+  .model-pill { max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .messages { padding: 18px 14px; }
+  .msg-row, .msg-row.user, .msg-row.ai { max-width: 92%; }
+  .input-area { padding: 12px 12px max(14px, env(safe-area-inset-bottom)); }
+  .text-box { grid-template-columns: auto minmax(0, 1fr); }
+  .composer-actions { grid-column: 1 / -1; justify-content: flex-end; border-top: 1px solid #f6e0d7; padding-top: 6px; }
 }
 
-.msg-time { font-size: 11px; color: #D85A30; opacity: 0.45; margin-top: 4px; padding: 0 3px; }
-
-/* 打字动画 */
-.typing { display: flex; align-items: center; gap: 4px; padding: 11px 15px; background: #fff; border: 1px solid #F5C4B3; border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
-.td { width: 6px; height: 6px; border-radius: 50%; background: #D85A30; animation: blink 1.3s infinite; }
-.td:nth-child(2) { animation-delay: 0.2s; }
-.td:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
-
-/* ===== 底部输入区 ===== */
-.input-area { padding: 12px 48px 18px; background: #FFFAF7; border-top: 1px solid #F5C4B3; flex-shrink: 0; }
-
-/* 录音状态显示 */
-.rec-status { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 0 14px; }
-.rec-status.hidden { display: none; }
-.rec-wave { display: flex; align-items: center; gap: 3px; height: 28px; }
-.rw { display: block; width: 4px; border-radius: 4px; background: #D85A30; }
-.rw:nth-child(1) { height: 10px; animation: rwave 0.8s ease-in-out infinite; }
-.rw:nth-child(2) { height: 20px; animation: rwave 0.8s ease-in-out infinite 0.1s; }
-.rw:nth-child(3) { height: 26px; animation: rwave 0.8s ease-in-out infinite 0.2s; }
-.rw:nth-child(4) { height: 18px; animation: rwave 0.8s ease-in-out infinite 0.3s; }
-.rw:nth-child(5) { height: 22px; animation: rwave 0.8s ease-in-out infinite 0.15s; }
-.rw:nth-child(6) { height: 14px; animation: rwave 0.8s ease-in-out infinite 0.25s; }
-.rw:nth-child(7) { height: 8px; animation: rwave 0.8s ease-in-out infinite 0.35s; }
-@keyframes rwave { 0%,100%{transform:scaleY(0.4)} 50%{transform:scaleY(1)} }
-.rec-info { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.rec-label { font-size: 13px; font-weight: 500; color: #993C1D; display: flex; align-items: center; gap: 6px; }
-.rec-red-dot { width: 8px; height: 8px; border-radius: 50%; background: #E24B4A; animation: pulse 1s infinite; }
-.rec-timer { font-size: 12px; color: #D85A30; font-variant-numeric: tabular-nums; }
-
-/* 输入行 */
-.input-row { display: flex; align-items: flex-end; gap: 10px; }
-.text-box { flex: 1; display: flex; align-items: flex-end; gap: 8px; background: #fff; border: 1.5px solid #F5C4B3; border-radius: 20px; padding: 9px 9px 9px 18px; transition: border-color 0.15s; }
-.text-box:focus-within { border-color: #D85A30; }
-.chat-input { flex: 1; border: none; outline: none; background: transparent; font-size: 14px; color: #4A1B0C; resize: none; max-height: 100px; line-height: 1.6; font-family: inherit; }
-.chat-input::placeholder { color: #F0997B; }
-.sm-btn { background: none; border: none; cursor: pointer; color: #D85A30; padding: 5px; display: flex; align-items: center; border-radius: 8px; transition: background 0.1s; }
-.sm-btn:hover { background: #FAECE7; }
-.send-btn { width: 34px; height: 34px; border-radius: 50%; background: #D85A30; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; transition: background 0.12s; }
-.send-btn:hover { background: #993C1D; }
-
-/* 录音按钮 */
-.mic-btn { width: 52px; height: 52px; border-radius: 50%; background: #F5C4B3; border: 2px solid #D85A30; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; color: #D85A30; }
-.mic-btn:hover { background: #F0997B; color: #fff; border-color: #993C1D; }
-.mic-btn.recording { background: #E24B4A; border-color: #A32D2D; color: #fff; animation: recpulse 1s infinite; }
-@keyframes recpulse { 0%,100%{box-shadow:0 0 0 0 rgba(226,75,74,0.4)} 50%{box-shadow:0 0 0 10px rgba(226,75,74,0)} }
-.mic-hint { text-align: center; font-size: 11px; color: #D85A30; opacity: 0.5; margin-top: 8px; }
-
-svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+@media (max-width: 640px) {
+  .app-frame { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .header-actions .icon-btn { display: none; }
+  .memory-toggle { min-width: 38px; padding: 0 10px; }
+  .memory-toggle span { display: none; }
+  .ch-title-row { gap: 7px; }
+  .ch-name { font-size: 21px; }
+  .bubble { font-size: 14px; padding: 11px 13px; }
+  .m-av { display: none; }
+}
 </style>
 </head>
 <body>
+<div class="app-shell">
+  <div class="app-frame" id="appFrame">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand-mini">
+        <div class="logo-av" aria-hidden="true"></div>
+        <div class="logo-name">Kiro</div>
+      </div>
 
-<!-- 顶部导航 -->
-<div class="topbar">
-  <div class="topbar-left">
-    <div class="logo-av">🐰</div>
-    <span class="logo-name">小G的家 ♡</span>
-  </div>
-  <div class="conn-status online">
-    <div class="conn-dot"></div>
-    后端在线
-  </div>
-  <div class="topbar-right">
-    <div class="model-pill">
-      Claude Sonnet
-      <svg class="ic" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-    <button class="icon-btn" title="对话历史">
-      <svg class="ic"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </button>
-    <button class="icon-btn" title="设置">
-      <svg class="ic"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- 主体 -->
-<div class="main">
-
-  <!-- 左侧边栏 -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <button class="new-btn">
+      <button class="new-btn" type="button">
         <svg class="ic" style="width:15px;height:15px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        新对话
+        <span>新对话</span>
       </button>
-    </div>
-    <div class="sidebar-label">最近对话</div>
-    <div class="sess-list">
-      <div class="sess active">
-        <span class="sess-icon">🎙️</span>
-        <span class="sess-name">今天的语音</span>
-        <span class="sess-time">刚刚</span>
-      </div>
-      <div class="sess">
-        <span class="sess-icon">🌸</span>
-        <span class="sess-name">搭建我的家</span>
-        <span class="sess-time">昨天</span>
-      </div>
-      <div class="sess">
-        <span class="sess-icon">💭</span>
-        <span class="sess-name">周末去哪玩</span>
-        <span class="sess-time">周一</span>
-      </div>
-      <div class="sess">
-        <span class="sess-icon">🎵</span>
-        <span class="sess-name">推荐歌单</span>
-        <span class="sess-time">上周</span>
-      </div>
-      <div class="sess">
-        <span class="sess-icon">😴</span>
-        <span class="sess-name">睡不着的夜晚</span>
-        <span class="sess-time">上周</span>
-      </div>
-    </div>
-  </div>
 
-  <!-- 对话区 -->
-  <div class="chat-wrap">
+      <nav class="nav-list">
+        <button class="nav-item active" type="button"><span class="nav-dot"></span><span class="nav-label">对话</span></button>
+        <button class="nav-item" type="button"><span class="nav-dot"></span><span class="nav-label">记忆</span></button>
+        <button class="nav-item" type="button"><span class="nav-dot"></span><span class="nav-label">画像</span></button>
+        <button class="nav-item" type="button"><span class="nav-dot"></span><span class="nav-label">设置</span></button>
+      </nav>
 
-    <!-- 对话头部 -->
-    <div class="chat-header">
-      <div class="ch-info">
-        <div class="ch-av">🐰</div>
-        <div>
-          <div class="ch-name">小G</div>
-          <div class="ch-status"><span class="green-dot"></span>在线陪你</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;">
-        <button class="icon-btn" title="搜索">
-          <svg class="ic"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </button>
-        <button class="icon-btn" title="更多">
-          <svg class="ic"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-        </button>
-      </div>
-    </div>
+      <div class="sidebar-spacer"></div>
+      <section class="side-status" aria-label="Kiro 状态">
+        <div class="side-status-title"><span class="green-dot"></span>Kiro 陪伴中</div>
+        <p id="sideStatusText">关系天气：稳定<br>Dream：读取中<br>维护：读取中</p>
+      </section>
+    </aside>
 
-    <!-- 加载状态条（正在识别） -->
-    <div class="status-bar" id="statusBar">
-      <div class="spin" id="statusSpin"></div>
-      <span id="statusText">正在识别语音…</span>
-    </div>
-
-    <!-- 消息列表 -->
-    <div class="messages" id="messages">
-      <!-- 聊天消息将动态添加到这里 -->
-    </div>
-
-    <!-- 底部输入区 -->
-    <div class="input-area">
-
-      <!-- 录音状态显示 -->
-      <div class="rec-status hidden" id="recStatus">
-        <div class="rec-wave">
-          <span class="rw"></span><span class="rw"></span><span class="rw"></span>
-          <span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span>
-        </div>
-        <div class="rec-info">
-          <div class="rec-label"><div class="rec-red-dot"></div>正在录音</div>
-          <div class="rec-timer" id="recTimer">00:00</div>
-        </div>
-        <div class="rec-wave" style="transform:scaleX(-1);">
-          <span class="rw"></span><span class="rw"></span><span class="rw"></span>
-          <span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span>
-        </div>
-      </div>
-
-      <!-- 输入行 -->
-      <div class="input-row">
-        <div class="text-box">
-          <textarea class="chat-input" id="chatInput" placeholder="和小G说点什么，或者点麦克风说话…" rows="1"></textarea>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <button class="sm-btn" title="表情">
-              <svg class="ic"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-            </button>
-            <button class="sm-btn" title="上传图片">
-              <svg class="ic"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </button>
-            <button class="send-btn" id="sendBtn" title="发送">
-              <svg class="ic" style="width:15px;height:15px;stroke:#fff"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" stroke="none"/></svg>
-            </button>
+    <main class="chat-wrap">
+      <header class="chat-header">
+        <div class="ch-info">
+          <div class="ch-av" aria-hidden="true"></div>
+          <div>
+            <div class="ch-title-row">
+              <div class="ch-name">Kiro</div>
+              <div class="ch-heart">♥</div>
+              <div class="model-pill" id="modelPill" title="当前模型">
+                <span>Gemini · 在线</span><span class="green-dot"></span>
+              </div>
+            </div>
           </div>
         </div>
+        <div class="header-actions">
+          <button class="memory-toggle active" id="memoryToggle" type="button" aria-expanded="true" aria-controls="memoryDrawer">
+            <svg class="ic" style="width:15px;height:15px"><path d="M12 3v18"/><path d="M8 7h8"/><path d="M7 12h10"/><path d="M8 17h8"/></svg>
+            <span>记忆状态</span>
+          </button>
+          <button class="icon-btn" type="button" title="主题">
+            <svg class="ic"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          </button>
+          <button class="icon-btn" type="button" title="更多">
+            <svg class="ic"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+        </div>
+      </header>
 
-        <!-- 录音按钮 -->
-        <button class="mic-btn" id="micBtn" title="点击开始录音">
-          <svg class="ic" style="width:22px;height:22px"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <div class="status-bar hidden" id="statusBar">
+        <div class="spin" id="statusSpin"></div>
+        <span id="statusText">正在处理…</span>
+      </div>
+
+      <div class="messages" id="messages" aria-live="polite"></div>
+
+      <section class="input-area" aria-label="发送消息">
+        <div class="rec-status hidden" id="recStatus">
+          <div class="rec-wave"><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+          <div class="rec-info">
+            <div class="rec-label"><span class="rec-red-dot"></span>正在录音</div>
+            <div class="rec-timer" id="recTimer">00:00</div>
+          </div>
+          <div class="rec-wave" style="transform:scaleX(-1);"><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span><span class="rw"></span></div>
+        </div>
+
+        <div class="input-row">
+          <div class="text-box">
+            <div class="composer-left">
+              <button class="sm-btn" type="button" title="表情">
+                <svg class="ic"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </button>
+              <button class="sm-btn" type="button" title="图片/文件">
+                <svg class="ic"><path d="M21.44 11.05 12.2 20.29a6 6 0 0 1-8.49-8.49l9.24-9.24a4 4 0 0 1 5.66 5.66l-9.25 9.24a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </button>
+            </div>
+
+            <textarea class="chat-input" id="chatInput" placeholder="和 Kiro 聊点什么..." rows="1"></textarea>
+
+            <div class="composer-actions">
+              <button class="voice-mode-btn mic-btn" id="micBtn" type="button" title="点击开始录音">
+                <svg class="ic" style="width:17px;height:17px"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <span id="micBtnLabel">语音</span>
+              </button>
+              <button class="send-btn" id="sendBtn" type="button" title="发送">
+                <svg class="ic" style="width:17px;height:17px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="mic-hint" id="micHint">点击语音开始录音 · 再次点击结束</div>
+      </section>
+    </main>
+
+    <aside class="memory-drawer" id="memoryDrawer" aria-label="记忆状态">
+      <div class="memory-drawer-header">
+        <div class="memory-drawer-title">
+          <h2>记忆状态</h2>
+          <p>只显示当前对话需要的状态。</p>
+        </div>
+        <button class="drawer-close" id="memoryClose" type="button" title="关闭记忆状态">
+          <svg class="ic"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div class="mic-hint" id="micHint">点击麦克风开始录音 · 再次点击结束</div>
-    </div>
+      <div class="memory-drawer-body">
+        <section class="memory-card">
+          <div class="memory-card-head"><h3>醒醒锚点</h3><span class="status-chip" id="wakeStatusChip">稳定</span></div>
+          <p id="wakeAnchorText">新窗口只注入少量关键锚点，不注入完整画像。</p>
+        </section>
+        <section class="memory-card">
+          <div class="memory-card-head"><h3>当前会话</h3><span class="status-chip" id="sessionStatusChip">同步中</span></div>
+          <p id="sessionStatusText">session_id 正在读取。</p>
+        </section>
+        <section class="memory-card">
+          <div class="memory-card-head"><h3>主动工具</h3><span class="status-chip" id="toolStatusChip">0/10</span></div>
+          <p>MCP-compatible 工具用于主动读记忆、写候选。</p>
+          <div class="tool-chips" id="toolChips"></div>
+        </section>
+        <section class="memory-card">
+          <div class="memory-card-head"><h3>Dream</h3><span class="status-chip dream" id="dreamStatusChip">读取中</span></div>
+          <p id="dreamStatusText">Digest 与 Crystallization 用于周期性消化，不进入主聊天噪音。</p>
+        </section>
+        <section class="memory-card">
+          <div class="memory-card-head"><h3>维护</h3><span class="status-chip warn" id="maintenanceStatusChip">读取中</span></div>
+          <p id="maintenanceStatusText">归档预览、向量、词图和部署检查保持分层。</p>
+        </section>
+        <section class="memory-card">
+          <div class="memory-card-head"><h3>短期上下文</h3><button class="drawer-action" id="resetContextBtn" type="button">重置</button></div>
+          <div class="context-control"><strong>轮数</strong><div class="context-bar"><span id="turnsBar" style="width:40%"></span></div><span class="context-value" id="turnsValue">4</span></div>
+          <div class="context-control"><strong>字符</strong><div class="context-bar"><span id="charsBar" style="width:18%"></span></div><span class="context-value" id="charsValue">180</span></div>
+          <p>只影响当前对话短期上下文，不等于长期记忆。</p>
+        </section>
+        <div class="drawer-actions">
+          <button class="drawer-action" id="refreshMemoryBtn" type="button">刷新状态</button>
+          <button class="drawer-action" id="copySessionBtn" type="button">复制同步链接</button>
+        </div>
+      </div>
+    </aside>
   </div>
 </div>
 
@@ -631,6 +719,7 @@ window.KiroMemoryAPI = {
 
 // ========== DOM元素 ==========
 const micBtn = document.getElementById('micBtn');
+const micBtnLabel = document.getElementById('micBtnLabel');
 const sendBtn = document.getElementById('sendBtn');
 const recStatus = document.getElementById('recStatus');
 const recTimer = document.getElementById('recTimer');
@@ -640,6 +729,28 @@ const statusText = document.getElementById('statusText');
 const statusSpin = document.getElementById('statusSpin');
 const chatInput = document.getElementById('chatInput');
 const chatBox = document.getElementById('messages');
+const appFrame = document.getElementById('appFrame');
+const memoryToggle = document.getElementById('memoryToggle');
+const memoryDrawer = document.getElementById('memoryDrawer');
+const memoryClose = document.getElementById('memoryClose');
+const refreshMemoryBtn = document.getElementById('refreshMemoryBtn');
+const copySessionBtn = document.getElementById('copySessionBtn');
+const resetContextBtn = document.getElementById('resetContextBtn');
+const sideStatusText = document.getElementById('sideStatusText');
+const modelPill = document.getElementById('modelPill');
+const wakeAnchorText = document.getElementById('wakeAnchorText');
+const sessionStatusText = document.getElementById('sessionStatusText');
+const sessionStatusChip = document.getElementById('sessionStatusChip');
+const toolStatusChip = document.getElementById('toolStatusChip');
+const toolChips = document.getElementById('toolChips');
+const dreamStatusChip = document.getElementById('dreamStatusChip');
+const dreamStatusText = document.getElementById('dreamStatusText');
+const maintenanceStatusChip = document.getElementById('maintenanceStatusChip');
+const maintenanceStatusText = document.getElementById('maintenanceStatusText');
+const turnsValue = document.getElementById('turnsValue');
+const charsValue = document.getElementById('charsValue');
+const turnsBar = document.getElementById('turnsBar');
+const charsBar = document.getElementById('charsBar');
 
 // ========== 状态 ==========
 let recording = false;
@@ -670,6 +781,67 @@ function showStatus(text, isError = false) {
 
 function hideStatus() {
   statusBar.classList.add('hidden');
+}
+function setConnectionOnline(isOnline) {
+  const label = isOnline ? '在线' : '离线';
+  if (modelPill) {
+    modelPill.innerHTML = `<span>Gemini · ${label}</span><span class="green-dot"></span>`;
+    modelPill.classList.toggle('offline', !isOnline);
+  }
+}
+
+function firstDefined(...values) {
+  return values.find(value => value !== undefined && value !== null && value !== '');
+}
+
+function updateMemoryDrawerState(state = KiroMemoryRuntime) {
+  const settings = state.contextSettings || getMemoryContextSettings();
+  const turns = Number(settings.recent_turns_count || 0);
+  const chars = Number(settings.recent_char_limit || 0);
+  const sessionId = state.sessionId || currentSessionId;
+  const errors = Array.isArray(state.errors) ? state.errors : [];
+  const toolList = firstDefined(
+    state.mcpManifest?.canonical_tools,
+    state.mcpManifest?.tools,
+    state.mcpManifest?.canonicalTools,
+    []
+  ) || [];
+  const tools = Array.isArray(toolList) ? toolList.map(item => typeof item === 'string' ? item : item.name).filter(Boolean) : [];
+  const dreamUpdated = Boolean(state.dreamCrystallization?.status?.updated_at || state.dreamCrystallization?.updated_at || state.pulse?.dream_crystallization);
+  const maintenanceOk = errors.every(item => item.key !== 'maintenance');
+
+  if (sessionStatusText) {
+    sessionStatusText.textContent = `session_id: ${sessionId}. 多端打开同一链接时会读取同一段会话历史。`;
+  }
+  if (sessionStatusChip) sessionStatusChip.textContent = state.ready ? '已连接' : '读取中';
+  if (toolStatusChip) toolStatusChip.textContent = `${Math.min(tools.length, 10)}/10`;
+  if (toolChips) {
+    toolChips.innerHTML = '';
+    (tools.length ? tools.slice(0, 10) : ['breath', 'read_bucket', 'trace', 'hold', 'grow']).forEach(name => {
+      const chip = document.createElement('span');
+      chip.className = 'tool-chip';
+      chip.textContent = name;
+      toolChips.appendChild(chip);
+    });
+  }
+  if (wakeAnchorText) {
+    const isNew = state.lastGatewayContext?.is_new_session;
+    wakeAnchorText.textContent = isNew ? '新 session 已使用轻量醒醒锚点接续。' : '连续对话中不重复注入完整画像，只保留必要状态。';
+  }
+  if (dreamStatusChip) dreamStatusChip.textContent = dreamUpdated ? '已更新' : '待观察';
+  if (dreamStatusText) dreamStatusText.textContent = 'Digest 与 Crystallization 在后台消化关系印象、主题变化和长期结晶候选。';
+  if (maintenanceStatusChip) maintenanceStatusChip.textContent = maintenanceOk ? '正常' : '需检查';
+  if (maintenanceStatusText) {
+    const previewCount = firstDefined(state.maintenance?.archive_preview_count, state.maintenance?.archivePreviewCount, state.maintenance?.preview_count, 0);
+    maintenanceStatusText.textContent = `归档预览 ${previewCount || 0} 条；向量、词图和 Dream 维护保持分层。`;
+  }
+  if (turnsValue) turnsValue.textContent = String(turns);
+  if (charsValue) charsValue.textContent = String(chars);
+  if (turnsBar) turnsBar.style.width = `${Math.max(6, Math.min(100, turns / 20 * 100))}%`;
+  if (charsBar) charsBar.style.width = `${Math.max(6, Math.min(100, chars / 1000 * 100))}%`;
+  if (sideStatusText) {
+    sideStatusText.innerHTML = `关系天气：稳定<br>Dream：${dreamUpdated ? '已更新' : '待观察'}<br>维护：${maintenanceOk ? '正常' : '需检查'}`;
+  }
 }
 
 // ========== 聊天记录保存/加载 ==========
@@ -1053,6 +1225,7 @@ micBtn.addEventListener('click', async () => {
       mediaRecorder.start();
       recording = true;
       micBtn.classList.add('recording');
+      if (micBtnLabel) micBtnLabel.textContent = '停止';
       recStatus.classList.remove('hidden');
       micHint.textContent = '再次点击结束录音';
       seconds = 0;
@@ -1072,8 +1245,9 @@ micBtn.addEventListener('click', async () => {
     mediaRecorder.stream.getTracks().forEach(track => track.stop());
     recording = false;
     micBtn.classList.remove('recording');
+    if (micBtnLabel) micBtnLabel.textContent = '语音';
     recStatus.classList.add('hidden');
-    micHint.textContent = '点击麦克风开始录音 · 再次点击结束';
+    micHint.textContent = '点击语音开始录音 · 再次点击结束';
     clearInterval(timerInterval);
   }
 });
@@ -1332,6 +1506,46 @@ if (newChatBtn) {
 window.addEventListener('focus', () => {
   loadCloudOrLocalChatHistory({ silent: true, onlyIfNewer: true });
 });
+if (memoryToggle && memoryDrawer) {
+  memoryToggle.addEventListener('click', () => {
+    const closed = memoryDrawer.classList.toggle('closed');
+    if (appFrame) appFrame.classList.toggle('drawer-closed', closed);
+    memoryToggle.classList.toggle('active', !closed);
+    memoryToggle.setAttribute('aria-expanded', String(!closed));
+  });
+}
+if (memoryClose && memoryDrawer && memoryToggle) {
+  memoryClose.addEventListener('click', () => {
+    memoryDrawer.classList.add('closed');
+    if (appFrame) appFrame.classList.add('drawer-closed');
+    memoryToggle.classList.remove('active');
+    memoryToggle.setAttribute('aria-expanded', 'false');
+  });
+}
+if (refreshMemoryBtn) {
+  refreshMemoryBtn.addEventListener('click', () => refreshMemoryRuntimeState({ silent: false }));
+}
+if (copySessionBtn) {
+  copySessionBtn.addEventListener('click', async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('session_id', currentSessionId);
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      showStatus('已复制同步链接', false);
+      setTimeout(hideStatus, 1400);
+    } catch (error) {
+      showStatus('复制失败，请手动复制地址栏链接', true);
+    }
+  });
+}
+if (resetContextBtn) {
+  resetContextBtn.addEventListener('click', () => {
+    setMemoryContextSettings({ recent_turns_count: 4, recent_char_limit: 180 });
+    publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
+  });
+}
+window.addEventListener('kiro-memory-runtime-updated', event => updateMemoryDrawerState(event.detail));
+updateMemoryDrawerState(KiroMemoryRuntime);
 
 // ========== PWA 安装壳 ==========
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
@@ -1345,16 +1559,11 @@ if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
 async function checkBackendStatus() {
   try {
     const response = await fetch(`${API_BASE}/`);
-    if (response.ok) {
-      document.querySelector('.conn-status').className = 'conn-status online';
-      document.querySelector('.conn-status').lastChild.textContent = '后端在线';
-    }
+    setConnectionOnline(response.ok);
   } catch (error) {
-    document.querySelector('.conn-status').className = 'conn-status offline';
-    document.querySelector('.conn-status').lastChild.textContent = '后端离线';
+    setConnectionOnline(false);
   }
 }
-
 // 启动时检查后端状态
 checkBackendStatus();
 refreshMemoryRuntimeState({ silent: true });
