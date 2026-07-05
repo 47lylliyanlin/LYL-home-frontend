@@ -506,6 +506,12 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
 .drawer-action { border: 1px solid var(--line); background: #fff; color: var(--coral-dark); border-radius: 10px; min-height: 32px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: 800; }
 .drawer-action:hover { border-color: var(--coral); }
 
+
+/* Mobile navigation */
+.mobile-nav {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .app-shell { padding: 0; }
   .app-frame { border-radius: 0; border: 0; grid-template-columns: 68px minmax(0, 1fr); }
@@ -537,7 +543,38 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
   .ch-name { font-size: 21px; }
   .bubble { font-size: 14px; padding: 11px 13px; }
   .m-av { display: none; }
+  .mobile-nav {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 25;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(255,253,251,.96);
+    box-shadow: 0 16px 44px rgba(107,52,30,.16);
+    backdrop-filter: blur(16px);
+  }
+  .mobile-nav .nav-item {
+    min-height: 48px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    gap: 3px;
+    padding: 4px 2px;
+    font-size: 11px;
+  }
+  .mobile-nav .nav-icon { width: 19px; height: 19px; }
+  .mobile-nav .nav-label { display: block; font-size: 11px; line-height: 1; }
+  .mobile-nav .nav-item.active { box-shadow: none; background: #ffe8df; }
+  .input-area { padding-bottom: calc(82px + env(safe-area-inset-bottom)); }
+  .emoji-panel { left: 12px; bottom: calc(100% + 66px); }
 }
+
 </style>
 </head>
 <body>
@@ -742,6 +779,13 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
         </div>
       </div>
     </aside>
+
+    <nav class="mobile-nav" aria-label="移动端导航">
+      <button class="nav-item" type="button" data-view="chat"><span class="nav-icon"><svg class="ic"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span><span class="nav-label">对话</span></button>
+      <button class="nav-item" type="button" data-view="memory"><span class="nav-icon"><svg class="ic"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 4v16"/><path d="M15 8h2"/><path d="M15 12h2"/><path d="M15 16h2"/></svg></span><span class="nav-label">记忆</span></button>
+      <button class="nav-item" type="button" data-view="profile"><span class="nav-icon"><svg class="ic"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="nav-label">画像</span></button>
+      <button class="nav-item" type="button" data-view="settings"><span class="nav-icon"><svg class="ic"><circle cx="12" cy="12" r="3.5"/><path d="M19 12h2"/><path d="M3 12h2"/><path d="m17 7 1.4-1.4"/><path d="M5.6 18.4 7 17"/><path d="M12 3V1"/><path d="M12 23v-2"/><path d="m17 17 1.4 1.4"/><path d="M5.6 5.6 7 7"/></svg></span><span class="nav-label">设置</span></button>
+    </nav>
   </div>
 </div>
 
@@ -1874,6 +1918,7 @@ function switchMainView(view) {
 navItems.forEach(item => {
   item.addEventListener('click', () => switchMainView(item.dataset.view || 'chat'));
 });
+switchMainView('chat');
 
 if (modelPill && modelPopover) {
   modelPill.addEventListener('click', event => {
