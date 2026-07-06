@@ -1012,6 +1012,100 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
   .memory-library-head, .memory-panel-head, .memory-list-tools { align-items: flex-start; flex-direction: column; }
 }
 
+
+/* Memory page P2 */
+.memory-filter-summary {
+  border: 1px solid #f2d6cc;
+  border-radius: 10px;
+  background: #fffaf7;
+  color: var(--muted);
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.55;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.memory-filter-summary strong { color: var(--ink); }
+.memory-filter-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.memory-filter-tag {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--coral-dark);
+  padding: 3px 8px;
+  font-weight: 850;
+}
+.memory-detail-top {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f2d6cc;
+}
+.memory-detail-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+.memory-detail-section {
+  display: grid;
+  gap: 8px;
+}
+.memory-detail-section h4 {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 900;
+}
+.memory-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.memory-detail-field {
+  border: 1px solid #f2d6cc;
+  border-radius: 10px;
+  background: #fffaf7;
+  padding: 9px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.memory-detail-field strong { font-size: 11px; color: var(--muted); }
+.memory-detail-field span { font-size: 12px; color: var(--ink); overflow-wrap: anywhere; }
+.memory-evidence-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.memory-evidence-list span {
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: #25785f;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+.memory-candidate-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.memory-candidate-meta span {
+  border: 1px solid #f2d6cc;
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: #fffaf7;
+}
+@media (max-width: 720px) {
+  .memory-filter-summary { align-items: flex-start; flex-direction: column; }
+  .memory-detail-grid { grid-template-columns: 1fr; }
+}
+
 /* Section views */
 .content-view {
   flex: 1;
@@ -1226,7 +1320,11 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
             <div class="memory-main">
               <div class="memory-toolbar">
                 <input class="memory-search" id="memorySearchInput" type="search" placeholder="搜索记忆、标签或主题...">
-                <button class="drawer-action" id="memoryFilterBtn" type="button">筛选</button>
+                <button class="drawer-action" id="memoryFilterBtn" type="button">清除筛选</button>
+              </div>
+              <div class="memory-filter-summary" id="memoryFilterSummary">
+                <span>筛选状态正在读取。</span>
+                <div class="memory-filter-tags"></div>
               </div>
               <section class="memory-library">
                 <div class="memory-library-head">
@@ -1876,6 +1974,7 @@ const memoryRebuildWordMapBtn = document.getElementById('memoryRebuildWordMapBtn
 const memoryVectorRebuildBtn = document.getElementById('memoryVectorRebuildBtn');
 const memoryArchivePreviewBtn = document.getElementById('memoryArchivePreviewBtn');
 const memoryFilterBtn = document.getElementById('memoryFilterBtn');
+const memoryFilterSummary = document.getElementById('memoryFilterSummary');
 const memorySortSelect = document.getElementById('memorySortSelect');
 const memoryTabs = document.getElementById('memoryTabs');
 const memoryListViewBtn = document.getElementById('memoryListViewBtn');
@@ -1932,6 +2031,36 @@ function classifyMemoryItem(item) {
   if (/计划|todo|mvp|阶段|任务|timeline|时间线/.test(haystack)) return 'plan';
   if (item.kind === 'concept' || /当前|动态|session|recent|continuity|刚刚/.test(haystack)) return 'dynamic';
   return 'long';
+}
+
+
+function memoryCategoryLabel(value) {
+  return ({ all: '全部', long: '长期', dynamic: '动态', plan: '计划', archive: '归档' })[value] || value || '全部';
+}
+
+function memoryKindLabel(value) {
+  return ({ candidate: '候选', concept: '概念', archive: '归档' })[value] || '记忆';
+}
+
+function rawFirst(raw = {}, keys = []) {
+  for (const key of keys) {
+    if (raw[key] !== undefined && raw[key] !== null && raw[key] !== '') return raw[key];
+  }
+  return '';
+}
+
+function renderMemoryFilterSummary(total, visible) {
+  if (!memoryFilterSummary) return;
+  const query = (memorySearchInput?.value || '').trim();
+  const tags = [
+    '分类 ' + memoryCategoryLabel(memoryActiveTab),
+    query && '搜索 "' + truncateText(query, 18) + '"',
+    '排序 ' + (memorySortSelect?.selectedOptions?.[0]?.textContent || '最近更新'),
+    memoryLayoutMode === 'grid' ? '网格' : '列表'
+  ].filter(Boolean);
+  memoryFilterSummary.querySelector('span').innerHTML = '<strong>' + visible + '</strong> / ' + total + ' 条显示。候选、词图和归档预览是展示层，不会自动写入长期记忆。';
+  const tagBox = memoryFilterSummary.querySelector('.memory-filter-tags');
+  if (tagBox) tagBox.innerHTML = tags.map(tag => '<span class="memory-filter-tag">' + escapeHtml(tag) + '</span>').join('');
 }
 
 function memoryItemScore(item) {
@@ -2035,6 +2164,7 @@ function renderMemoryCandidatesPanel(candidates = []) {
         <span class="memory-candidate-title"></span>
         <span class="memory-kind candidate"></span>
       </div>
+      <div class="memory-candidate-meta"></div>
       <div class="memory-candidate-preview"></div>
       <div class="memory-actions">
         <button class="memory-action primary" type="button" data-candidate-action="approve">批准</button>
@@ -2042,9 +2172,15 @@ function renderMemoryCandidatesPanel(candidates = []) {
       </div>
     `;
     const status = candidate.status || 'pending';
+    const meta = [
+      candidate.suggested_type && '类型 ' + candidate.suggested_type,
+      candidate.gate_code && '门禁 ' + candidate.gate_code,
+      candidate.created_at && '创建 ' + formatMemoryDate(candidate.created_at)
+    ].filter(Boolean);
     card.querySelector('.memory-candidate-title').textContent = normalized.title;
     card.querySelector('.memory-kind').textContent = status === 'pending' ? '待审核' : status;
-    card.querySelector('.memory-candidate-preview').textContent = truncateText(normalized.preview || '暂无摘要。', 120);
+    card.querySelector('.memory-candidate-meta').innerHTML = meta.length ? meta.map(item => '<span>' + escapeHtml(item) + '</span>').join('') : '<span>等待人工确认</span>';
+    card.querySelector('.memory-candidate-preview').textContent = truncateText(normalized.preview || '暂无摘要。', 150);
     card.querySelectorAll('[data-candidate-action]').forEach(button => {
       button.disabled = status !== 'pending';
       button.addEventListener('click', () => reviewMemoryCandidate(normalized, button.dataset.candidateAction));
@@ -2092,11 +2228,13 @@ function renderMemoryTabs() {
 function renderMemoryList() {
   if (!memoryList) return;
   renderMemoryTabs();
+  const total = memoryPageItems.length;
   const items = sortedMemoryItems(filteredMemoryItems());
+  renderMemoryFilterSummary(total, items.length);
   if (memoryLibraryCount) memoryLibraryCount.textContent = `共 ${items.length} 条；候选与词图只是展示层，不会自动写入长期记忆。`;
   memoryList.classList.toggle('grid-mode', memoryLayoutMode === 'grid');
   if (!items.length) {
-    memoryList.innerHTML = '<div class="memory-empty">没有匹配的记忆条目。</div>';
+    memoryList.innerHTML = '<div class="memory-empty">没有匹配的记忆条目。可以清除筛选，或者刷新记忆状态。</div>';
     renderMemoryDetail(null);
     return;
   }
@@ -2111,7 +2249,7 @@ function renderMemoryList() {
     button.innerHTML = `
       <div class="memory-row-head">
         <span class="memory-row-title"></span>
-        <span class="memory-kind ${item.kind}">${item.kind === 'candidate' ? '候选' : item.kind === 'concept' ? '概念' : '归档'}</span>
+        <span class="memory-kind ${item.kind}">${memoryKindLabel(item.kind)}</span>
       </div>
       <div class="memory-row-preview"></div>
       <div class="memory-row-foot">
@@ -2139,9 +2277,29 @@ function renderMemoryDetail(item) {
     memoryDetail.innerHTML = '<h3>没有可显示的条目</h3><p class="memory-empty">换一个筛选条件，或者刷新记忆状态。</p>';
     return;
   }
+  const score = memoryItemScore(item);
+  const raw = item.raw || {};
+  const evidence = raw.evidence_ids || raw.evidence || raw.moment_ids || raw.bucket_ids || [];
+  const evidenceList = Array.isArray(evidence) ? evidence : String(evidence || '').split(/[ ,]+/).filter(Boolean);
+  const fields = [
+    ['来源', item.subtitle || raw.source || '记忆系统'],
+    ['分类', memoryCategoryLabel(item.category)],
+    ['状态', raw.status || (item.kind === 'candidate' ? 'pending' : '只读')],
+    ['分数', score ? score + '%' : '轻量'],
+    ['类型', rawFirst(raw, ['suggested_type', 'type', 'kind']) || memoryKindLabel(item.kind)],
+    ['时间', formatMemoryDate(rawFirst(raw, ['created_at', 'updated_at', 'created', 'timestamp'])) || '暂无']
+  ];
   memoryDetail.innerHTML = '';
-  const title = document.createElement('h3');
-  title.textContent = item.title;
+  const top = document.createElement('div');
+  top.className = 'memory-detail-top';
+  top.innerHTML = `
+    <div class="memory-detail-kicker">
+      <span class="memory-kind ${item.kind}">${memoryKindLabel(item.kind)}</span>
+      <span class="meta-pill">${escapeHtml(memoryCategoryLabel(item.category))}</span>
+    </div>
+    <h3></h3>
+  `;
+  top.querySelector('h3').textContent = item.title;
   const meta = document.createElement('div');
   meta.className = 'memory-detail-meta';
   (item.meta || []).forEach(value => {
@@ -2150,12 +2308,41 @@ function renderMemoryDetail(item) {
     pill.textContent = value;
     meta.appendChild(pill);
   });
+  const overview = document.createElement('section');
+  overview.className = 'memory-detail-section';
+  overview.innerHTML = '<h4>字段</h4><div class="memory-detail-grid"></div>';
+  const grid = overview.querySelector('.memory-detail-grid');
+  fields.forEach(([label, value]) => {
+    const field = document.createElement('div');
+    field.className = 'memory-detail-field';
+    field.innerHTML = '<strong></strong><span></span>';
+    field.querySelector('strong').textContent = label;
+    field.querySelector('span').textContent = String(value || '暂无');
+    grid.appendChild(field);
+  });
+  const content = document.createElement('section');
+  content.className = 'memory-detail-section';
+  content.innerHTML = '<h4>内容预览</h4>';
   const preview = document.createElement('div');
   preview.className = 'memory-preview-box';
   preview.textContent = item.preview || '暂无摘要。';
-  memoryDetail.appendChild(title);
-  memoryDetail.appendChild(meta);
-  memoryDetail.appendChild(preview);
+  content.appendChild(preview);
+  memoryDetail.appendChild(top);
+  if ((item.meta || []).length) memoryDetail.appendChild(meta);
+  memoryDetail.appendChild(overview);
+  if (evidenceList.length) {
+    const evidenceBox = document.createElement('section');
+    evidenceBox.className = 'memory-detail-section';
+    evidenceBox.innerHTML = '<h4>证据入口</h4><div class="memory-evidence-list"></div>';
+    const box = evidenceBox.querySelector('.memory-evidence-list');
+    evidenceList.slice(0, 8).forEach(value => {
+      const chip = document.createElement('span');
+      chip.textContent = String(value);
+      box.appendChild(chip);
+    });
+    memoryDetail.appendChild(evidenceBox);
+  }
+  memoryDetail.appendChild(content);
   if (item.kind === 'candidate') {
     const actions = document.createElement('div');
     actions.className = 'memory-actions';
@@ -3501,7 +3688,9 @@ if (memoryGridViewBtn) {
 }
 if (memoryFilterBtn) {
   memoryFilterBtn.addEventListener('click', () => {
-    memoryActiveTab = memoryActiveTab === 'all' ? 'long' : 'all';
+    memoryActiveTab = 'all';
+    if (memorySearchInput) memorySearchInput.value = '';
+    if (memorySortSelect) memorySortSelect.value = 'recent';
     renderMemoryList();
   });
 }
