@@ -661,6 +661,251 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
   .memory-toolbar { grid-template-columns: 1fr; }
 }
 
+
+/* Memory page R2 */
+.memory-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(300px, .95fr);
+  gap: 12px;
+}
+.memory-main, .memory-side, .memory-panel {
+  min-width: 0;
+}
+.memory-library {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.9);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.memory-library-head, .memory-panel-head, .memory-list-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.memory-library-head h3, .memory-panel-head h3 {
+  font-size: 15px;
+  color: var(--ink);
+}
+.memory-library-sub, .memory-panel-sub {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.memory-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f6ddd4;
+  padding-bottom: 8px;
+}
+.memory-tab {
+  min-height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.memory-tab.active {
+  background: #ffe9df;
+  color: var(--coral-dark);
+}
+.memory-list-tools {
+  color: var(--muted);
+  font-size: 12px;
+}
+.memory-sort {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  padding: 0 10px;
+  font-size: 12px;
+}
+.memory-view-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffaf7;
+}
+.memory-view-btn {
+  width: 26px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+}
+.memory-view-btn.active {
+  background: #fff;
+  color: var(--coral-dark);
+  box-shadow: 0 4px 10px rgba(139,79,51,.1);
+}
+.memory-list {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  gap: 8px;
+  overflow: visible;
+}
+.memory-list.grid-mode {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.memory-row {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdfb;
+  box-shadow: 0 8px 18px rgba(139,79,51,.04);
+}
+.memory-row.active {
+  box-shadow: inset 3px 0 0 var(--coral), 0 8px 18px rgba(139,79,51,.06);
+}
+.memory-row-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.memory-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--coral-dark);
+  font-weight: 900;
+}
+.memory-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+  opacity: .9;
+}
+.memory-side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.memory-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.9);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.word-ribbon {
+  position: relative;
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.word-ribbon::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 50%;
+  border-top: 1px solid #f2d6cc;
+}
+.word-node {
+  position: relative;
+  z-index: 1;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 850;
+}
+.word-node.core {
+  background: #fff1ea;
+  border-color: var(--coral);
+  color: var(--coral-dark);
+  transform: translateY(3px);
+}
+.word-node.cool {
+  background: var(--teal-soft);
+  color: #25785f;
+}
+.memory-candidate-list {
+  display: grid;
+  gap: 8px;
+}
+.memory-candidate-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffdfb;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.memory-candidate-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.memory-candidate-preview {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.memory-maintenance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.maintenance-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255,255,255,.9);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.maintenance-card h3 {
+  font-size: 13px;
+  color: var(--ink);
+}
+.maintenance-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.maintenance-card .memory-action {
+  justify-self: end;
+}
+.status-chip.ok {
+  background: #e9f8ef;
+  color: #28744c;
+}
+@media (max-width: 1100px) {
+  .memory-board { grid-template-columns: 1fr; }
+  .memory-maintenance-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .memory-list.grid-mode { grid-template-columns: 1fr; }
+  .memory-library-head, .memory-panel-head, .memory-list-tools { align-items: flex-start; flex-direction: column; }
+}
+
 /* Section views */
 .content-view {
   flex: 1;
@@ -866,40 +1111,112 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
         <div class="view-head">
           <div>
             <h2>记忆</h2>
-            <p>先展示安全表面：统计、候选、词图概念和归档预览。完整 bucket 列表后续接专门接口。</p>
+            <p>整理长期记忆、当前会话和候选内容；候选不会直接写入长期记忆。</p>
           </div>
           <button class="drawer-action" id="memoryPageRefreshBtn" type="button">刷新</button>
         </div>
         <div class="memory-workspace">
-          <div class="memory-summary-grid" id="memorySummaryGrid">
-            <section class="memory-stat"><strong>--</strong><span>全部记忆</span></section>
-            <section class="memory-stat"><strong>--</strong><span>候选</span></section>
-            <section class="memory-stat"><strong>--</strong><span>词图节点</span></section>
-            <section class="memory-stat"><strong>--</strong><span>归档预览</span></section>
-          </div>
-          <div class="memory-toolbar">
-            <input class="memory-search" id="memorySearchInput" type="search" placeholder="搜索标题、摘要、概念...">
-            <select class="memory-filter" id="memoryTypeFilter" aria-label="记忆类型筛选">
-              <option value="all">全部</option>
-              <option value="candidate">候选</option>
-              <option value="concept">词图概念</option>
-              <option value="archive">归档预览</option>
-            </select>
-            <button class="drawer-action" id="memoryRebuildWordMapBtn" type="button">重建词图</button>
-          </div>
-          <div class="memory-layout">
-            <div class="memory-list" id="memoryList">
-              <div class="memory-empty">正在读取记忆状态...</div>
+          <div class="memory-board">
+            <div class="memory-main">
+              <div class="memory-toolbar">
+                <input class="memory-search" id="memorySearchInput" type="search" placeholder="搜索记忆、标签或主题...">
+                <button class="drawer-action" id="memoryFilterBtn" type="button">筛选</button>
+              </div>
+              <section class="memory-library">
+                <div class="memory-library-head">
+                  <div>
+                    <h3>记忆库</h3>
+                    <div class="memory-library-sub" id="memoryLibraryCount">正在读取...</div>
+                  </div>
+                  <div class="memory-list-tools">
+                    <span>排序：</span>
+                    <select class="memory-sort" id="memorySortSelect" aria-label="记忆排序">
+                      <option value="recent">最近更新</option>
+                      <option value="important">重要程度</option>
+                      <option value="kind">类型</option>
+                    </select>
+                    <span class="memory-view-toggle" aria-label="视图切换">
+                      <button class="memory-view-btn active" id="memoryListViewBtn" type="button" title="列表视图">
+                        <svg class="ic" style="width:14px;height:14px"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+                      </button>
+                      <button class="memory-view-btn" id="memoryGridViewBtn" type="button" title="网格视图">
+                        <svg class="ic" style="width:14px;height:14px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                      </button>
+                    </span>
+                  </div>
+                </div>
+                <div class="memory-tabs" id="memoryTabs" aria-label="记忆分类">
+                  <button class="memory-tab active" type="button" data-memory-tab="all">全部</button>
+                  <button class="memory-tab" type="button" data-memory-tab="long">长期</button>
+                  <button class="memory-tab" type="button" data-memory-tab="dynamic">动态</button>
+                  <button class="memory-tab" type="button" data-memory-tab="plan">计划</button>
+                  <button class="memory-tab" type="button" data-memory-tab="archive">归档</button>
+                </div>
+                <div class="memory-list" id="memoryList">
+                  <div class="memory-empty">正在读取记忆状态...</div>
+                </div>
+                <button class="memory-action" id="memoryShowAllBtn" type="button">查看全部记忆 →</button>
+              </section>
             </div>
-            <aside class="memory-detail" id="memoryDetail">
-              <h3>选择一条记忆</h3>
-              <p class="memory-empty">左侧会显示候选、词图概念和归档预览。点击条目后在这里查看详情。</p>
+            <aside class="memory-side">
+              <section class="memory-panel">
+                <div class="memory-panel-head">
+                  <div>
+                    <h3>词图概览</h3>
+                    <div class="memory-panel-sub">Word Map 只作为弱检索辅助，不直接当作长期事实。</div>
+                  </div>
+                  <button class="memory-action" id="memoryRebuildWordMapBtn" type="button">重建</button>
+                </div>
+                <div class="word-ribbon" id="memoryWordMapPanel">
+                  <span class="word-node core">记忆</span>
+                  <span class="word-node">项目</span>
+                  <span class="word-node cool">PWA</span>
+                </div>
+              </section>
+              <section class="memory-panel">
+                <div class="memory-panel-head">
+                  <div>
+                    <h3>候选审批</h3>
+                    <div class="memory-panel-sub" id="memoryCandidateCount">正在读取候选...</div>
+                  </div>
+                  <span class="status-chip warn">不会直接写入长期记忆</span>
+                </div>
+                <div class="memory-candidate-list" id="memoryCandidatePanel">
+                  <div class="memory-empty">正在读取候选...</div>
+                </div>
+              </section>
             </aside>
           </div>
-          <div class="memory-maintenance-row">
-            <button class="memory-action" id="memoryVectorRebuildBtn" type="button">重建向量</button>
-            <button class="memory-action" id="memoryArchivePreviewBtn" type="button">刷新归档预览</button>
-          </div>
+          <section class="memory-panel">
+            <div class="memory-panel-head">
+              <div>
+                <h3>维护</h3>
+                <div class="memory-panel-sub">定期维护帮助记忆系统保持质量和可检索性。</div>
+              </div>
+              <span class="status-chip ok" id="memoryMaintenanceStatus">正常</span>
+            </div>
+            <div class="memory-maintenance-grid" id="memoryMaintenanceCards">
+              <article class="maintenance-card">
+                <h3>重建词图</h3>
+                <p>整理概念关系，优化语义连接。</p>
+                <button class="memory-action" id="memoryRebuildWordMapBtnInline" type="button">立即运行</button>
+              </article>
+              <article class="maintenance-card">
+                <h3>重建向量</h3>
+                <p>刷新向量索引，提升召回效果。</p>
+                <button class="memory-action" id="memoryVectorRebuildBtn" type="button">立即运行</button>
+              </article>
+              <article class="maintenance-card">
+                <h3>归档预览</h3>
+                <p>查看即将归档的过期动态记忆。</p>
+                <button class="memory-action" id="memoryArchivePreviewBtn" type="button">查看预览</button>
+              </article>
+            </div>
+          </section>
+          <aside class="memory-detail" id="memoryDetail" aria-label="记忆详情">
+            <h3>选择一条记忆</h3>
+            <p class="memory-empty">点击记忆库或候选审批中的条目后，这里会显示详情和可执行动作。</p>
+          </aside>
         </div>
       </section>
 
@@ -1339,6 +1656,18 @@ const memorySummaryGrid = document.getElementById('memorySummaryGrid');
 const memoryRebuildWordMapBtn = document.getElementById('memoryRebuildWordMapBtn');
 const memoryVectorRebuildBtn = document.getElementById('memoryVectorRebuildBtn');
 const memoryArchivePreviewBtn = document.getElementById('memoryArchivePreviewBtn');
+const memoryFilterBtn = document.getElementById('memoryFilterBtn');
+const memorySortSelect = document.getElementById('memorySortSelect');
+const memoryTabs = document.getElementById('memoryTabs');
+const memoryListViewBtn = document.getElementById('memoryListViewBtn');
+const memoryGridViewBtn = document.getElementById('memoryGridViewBtn');
+const memoryLibraryCount = document.getElementById('memoryLibraryCount');
+const memoryWordMapPanel = document.getElementById('memoryWordMapPanel');
+const memoryCandidatePanel = document.getElementById('memoryCandidatePanel');
+const memoryCandidateCount = document.getElementById('memoryCandidateCount');
+const memoryMaintenanceStatus = document.getElementById('memoryMaintenanceStatus');
+const memoryRebuildWordMapBtnInline = document.getElementById('memoryRebuildWordMapBtnInline');
+const memoryShowAllBtn = document.getElementById('memoryShowAllBtn');
 const profilePageRefreshBtn = document.getElementById('profilePageRefreshBtn');
 const userPortraitDoc = document.getElementById('userPortraitDoc');
 const kiroStatePanel = document.getElementById('kiroStatePanel');
@@ -1358,7 +1687,10 @@ let restoringChatHistory = false;
 let syncingChatHistory = false;
 let historyAuthPromptOpen = false;
 let memoryPageItems = [];
+let memoryPagePayload = {};
 let selectedMemoryItemId = null;
+let memoryActiveTab = 'all';
+let memoryLayoutMode = 'list';
 let memoryPageLoaded = false;
 let profilePageLoaded = false;
 
@@ -1375,11 +1707,28 @@ function formatMemoryDate(value) {
   return date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
+function classifyMemoryItem(item) {
+  const haystack = [item.title, item.preview, item.subtitle, ...(item.meta || [])].join(' ').toLowerCase();
+  if (item.kind === 'archive') return 'archive';
+  if (/计划|todo|mvp|阶段|任务|timeline|时间线/.test(haystack)) return 'plan';
+  if (item.kind === 'concept' || /当前|动态|session|recent|continuity|刚刚/.test(haystack)) return 'dynamic';
+  return 'long';
+}
+
+function memoryItemScore(item) {
+  const raw = item.raw || {};
+  const score = raw.score ?? raw.final_score ?? raw.importance ?? raw.concept_score ?? raw.weight ?? raw.confidence ?? 0;
+  const numeric = Number(score);
+  if (Number.isNaN(numeric)) return 0;
+  return numeric > 1 ? Math.min(100, numeric) : Math.round(numeric * 100);
+}
+
 function normalizeMemoryPageItems(payload = {}) {
   const candidates = (payload.candidates || []).map(item => ({
     id: 'candidate:' + (item.name || item.id || item.title),
     kind: 'candidate',
-    title: item.title || item.id || '未命名候选',
+    category: 'long',
+    title: item.title || item.id || item.name || '未命名候选',
     subtitle: item.status || 'pending',
     preview: item.preview || item.reason || '',
     raw: item,
@@ -1393,6 +1742,7 @@ function normalizeMemoryPageItems(payload = {}) {
   const concepts = ((payload.wordMap || {}).top_concepts || []).map(item => ({
     id: 'concept:' + (item.word || item),
     kind: 'concept',
+    category: 'dynamic',
     title: item.word || String(item),
     subtitle: 'Word Map',
     preview: `bucket: ${item.bucket_count || 0} · moment: ${item.moment_count || 0} · score: ${Number(item.concept_score || item.weight || 0).toFixed(2)}`,
@@ -1406,6 +1756,7 @@ function normalizeMemoryPageItems(payload = {}) {
   const archive = (payload.archivePreview || []).map(item => ({
     id: 'archive:' + (item.id || item.memory_id || item.title),
     kind: 'archive',
+    category: 'archive',
     title: item.title || item.name || item.id || item.memory_id || '归档候选',
     subtitle: '归档预览',
     preview: item.preview || item.reason || item.content || '',
@@ -1416,7 +1767,7 @@ function normalizeMemoryPageItems(payload = {}) {
       item.created && '创建 ' + formatMemoryDate(item.created)
     ].filter(Boolean)
   }));
-  return [...candidates, ...concepts, ...archive];
+  return [...candidates, ...concepts, ...archive].map(item => ({ ...item, category: item.category || classifyMemoryItem(item) }));
 }
 
 function renderMemorySummary(payload = {}) {
@@ -1434,19 +1785,97 @@ function renderMemorySummary(payload = {}) {
   memorySummaryGrid.innerHTML = stats.map(item => `<section class="memory-stat"><strong>${item.value}</strong><span>${item.label}</span></section>`).join('');
 }
 
+function renderWordMapOverview(payload = {}) {
+  if (!memoryWordMapPanel) return;
+  const concepts = ((payload.wordMap || {}).top_concepts || []).slice(0, 6);
+  if (!concepts.length) {
+    memoryWordMapPanel.innerHTML = '<span class="word-node core">记忆</span><span class="word-node">等待重建</span>';
+    return;
+  }
+  memoryWordMapPanel.innerHTML = concepts.map((item, index) => {
+    const word = item.word || String(item);
+    const className = index === 1 ? 'word-node core' : index % 3 === 0 ? 'word-node cool' : 'word-node';
+    return `<span class="${className}">${escapeHtml(truncateText(word, 14))}</span>`;
+  }).join('');
+}
+
+function renderMemoryCandidatesPanel(candidates = []) {
+  if (memoryCandidateCount) memoryCandidateCount.textContent = `共 ${candidates.length} 条候选`;
+  if (!memoryCandidatePanel) return;
+  if (!candidates.length) {
+    memoryCandidatePanel.innerHTML = '<div class="memory-empty">当前没有候选内容。</div>';
+    return;
+  }
+  memoryCandidatePanel.innerHTML = '';
+  candidates.slice(0, 5).forEach(candidate => {
+    const normalized = normalizeMemoryPageItems({ candidates: [candidate] })[0];
+    const card = document.createElement('article');
+    card.className = 'memory-candidate-card';
+    card.innerHTML = `
+      <div class="memory-row-head">
+        <span class="memory-candidate-title"></span>
+        <span class="memory-kind candidate"></span>
+      </div>
+      <div class="memory-candidate-preview"></div>
+      <div class="memory-actions">
+        <button class="memory-action primary" type="button" data-candidate-action="approve">批准</button>
+        <button class="memory-action" type="button" data-candidate-action="reject">忽略</button>
+      </div>
+    `;
+    const status = candidate.status || 'pending';
+    card.querySelector('.memory-candidate-title').textContent = normalized.title;
+    card.querySelector('.memory-kind').textContent = status === 'pending' ? '待审核' : status;
+    card.querySelector('.memory-candidate-preview').textContent = truncateText(normalized.preview || '暂无摘要。', 120);
+    card.querySelectorAll('[data-candidate-action]').forEach(button => {
+      button.disabled = status !== 'pending';
+      button.addEventListener('click', () => reviewMemoryCandidate(normalized, button.dataset.candidateAction));
+    });
+    card.addEventListener('click', event => {
+      if (event.target.closest('button')) return;
+      selectedMemoryItemId = normalized.id;
+      renderMemoryDetail(normalized);
+    });
+    memoryCandidatePanel.appendChild(card);
+  });
+}
+
+function renderMemoryMaintenance(payload = {}) {
+  if (!memoryMaintenanceStatus) return;
+  const archiveCount = (payload.archivePreview || []).length;
+  memoryMaintenanceStatus.textContent = archiveCount ? '已更新' : '正常';
+  memoryMaintenanceStatus.className = 'status-chip ' + (archiveCount ? 'ok' : 'ok');
+}
+
 function filteredMemoryItems() {
   const query = (memorySearchInput?.value || '').trim().toLowerCase();
-  const type = memoryTypeFilter?.value || 'all';
   return memoryPageItems.filter(item => {
-    if (type !== 'all' && item.kind !== type) return false;
+    if (memoryActiveTab !== 'all' && item.category !== memoryActiveTab) return false;
     if (!query) return true;
     return [item.title, item.subtitle, item.preview, ...(item.meta || [])].join('\n').toLowerCase().includes(query);
   });
 }
 
+function sortedMemoryItems(items) {
+  const mode = memorySortSelect?.value || 'recent';
+  const next = [...items];
+  if (mode === 'important') return next.sort((a, b) => memoryItemScore(b) - memoryItemScore(a));
+  if (mode === 'kind') return next.sort((a, b) => String(a.kind).localeCompare(String(b.kind), 'zh-CN'));
+  return next;
+}
+
+function renderMemoryTabs() {
+  if (!memoryTabs) return;
+  memoryTabs.querySelectorAll('[data-memory-tab]').forEach(button => {
+    button.classList.toggle('active', button.dataset.memoryTab === memoryActiveTab);
+  });
+}
+
 function renderMemoryList() {
   if (!memoryList) return;
-  const items = filteredMemoryItems();
+  renderMemoryTabs();
+  const items = sortedMemoryItems(filteredMemoryItems());
+  if (memoryLibraryCount) memoryLibraryCount.textContent = `共 ${items.length} 条；候选与词图只是展示层，不会自动写入长期记忆。`;
+  memoryList.classList.toggle('grid-mode', memoryLayoutMode === 'grid');
   if (!items.length) {
     memoryList.innerHTML = '<div class="memory-empty">没有匹配的记忆条目。</div>';
     renderMemoryDetail(null);
@@ -1456,6 +1885,7 @@ function renderMemoryList() {
   memoryList.innerHTML = '';
   items.forEach(item => {
     const button = document.createElement('button');
+    const score = memoryItemScore(item);
     button.type = 'button';
     button.className = 'memory-row' + (item.id === selectedMemoryItemId ? ' active' : '');
     button.dataset.memoryItemId = item.id;
@@ -1465,9 +1895,15 @@ function renderMemoryList() {
         <span class="memory-kind ${item.kind}">${item.kind === 'candidate' ? '候选' : item.kind === 'concept' ? '概念' : '归档'}</span>
       </div>
       <div class="memory-row-preview"></div>
+      <div class="memory-row-foot">
+        <span></span>
+        <span class="memory-score"></span>
+      </div>
     `;
     button.querySelector('.memory-row-title').textContent = item.title;
-    button.querySelector('.memory-row-preview').textContent = truncateText(item.preview || item.subtitle, 110);
+    button.querySelector('.memory-row-preview').textContent = truncateText(item.preview || item.subtitle, 120);
+    button.querySelector('.memory-row-foot span').textContent = item.meta?.[0] || item.subtitle || '记忆条目';
+    button.querySelector('.memory-score').innerHTML = '<span class="memory-dot"></span>' + (score ? score + '%' : '轻量');
     button.addEventListener('click', () => {
       selectedMemoryItemId = item.id;
       renderMemoryList();
@@ -1517,7 +1953,7 @@ function renderMemoryDetail(item) {
 }
 
 async function loadMemoryPageData(options = {}) {
-  if (!memoryList || !memorySummaryGrid) return;
+  if (!memoryList) return;
   if (!options.silent) memoryList.innerHTML = '<div class="memory-empty">正在读取记忆状态...</div>';
   try {
     const [pulse, candidatesData, wordMap, archiveData] = await Promise.all([
@@ -1535,7 +1971,11 @@ async function loadMemoryPageData(options = {}) {
       wordMap,
       archivePreview: archiveData.items || []
     };
+    memoryPagePayload = payload;
     renderMemorySummary(payload);
+    renderWordMapOverview(payload);
+    renderMemoryCandidatesPanel(payload.candidates);
+    renderMemoryMaintenance(payload);
     memoryPageItems = normalizeMemoryPageItems(payload);
     renderMemoryList();
     memoryPageLoaded = true;
@@ -1545,6 +1985,7 @@ async function loadMemoryPageData(options = {}) {
     }
   } catch (error) {
     memoryList.innerHTML = '<div class="memory-empty">读取失败：' + (error.message || error) + '</div>';
+    if (memoryCandidatePanel) memoryCandidatePanel.innerHTML = '<div class="memory-empty">读取失败：' + (error.message || error) + '</div>';
     showStatus('记忆页读取失败：' + (error.message || error), true);
   }
 }
@@ -2688,6 +3129,50 @@ if (memoryVectorRebuildBtn) {
 }
 if (memoryArchivePreviewBtn) {
   memoryArchivePreviewBtn.addEventListener('click', () => loadMemoryPageData({ silent: false }));
+}
+
+if (memoryTabs) {
+  memoryTabs.querySelectorAll('[data-memory-tab]').forEach(button => {
+    button.addEventListener('click', () => {
+      memoryActiveTab = button.dataset.memoryTab || 'all';
+      renderMemoryList();
+    });
+  });
+}
+if (memorySortSelect) {
+  memorySortSelect.addEventListener('change', renderMemoryList);
+}
+if (memoryListViewBtn) {
+  memoryListViewBtn.addEventListener('click', () => {
+    memoryLayoutMode = 'list';
+    memoryListViewBtn.classList.add('active');
+    memoryGridViewBtn?.classList.remove('active');
+    renderMemoryList();
+  });
+}
+if (memoryGridViewBtn) {
+  memoryGridViewBtn.addEventListener('click', () => {
+    memoryLayoutMode = 'grid';
+    memoryGridViewBtn.classList.add('active');
+    memoryListViewBtn?.classList.remove('active');
+    renderMemoryList();
+  });
+}
+if (memoryFilterBtn) {
+  memoryFilterBtn.addEventListener('click', () => {
+    memoryActiveTab = memoryActiveTab === 'all' ? 'long' : 'all';
+    renderMemoryList();
+  });
+}
+if (memoryShowAllBtn) {
+  memoryShowAllBtn.addEventListener('click', () => {
+    memoryActiveTab = 'all';
+    if (memorySearchInput) memorySearchInput.value = '';
+    renderMemoryList();
+  });
+}
+if (memoryRebuildWordMapBtnInline) {
+  memoryRebuildWordMapBtnInline.addEventListener('click', () => memoryRebuildWordMapBtn?.click());
 }
 
 document.querySelectorAll('[data-panel-action]').forEach(button => {
