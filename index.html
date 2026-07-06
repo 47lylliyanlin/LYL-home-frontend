@@ -451,6 +451,92 @@ body.focus-mode .app-shell { padding: 0; }
 body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
 
 
+
+/* Profile page P1 */
+.profile-workspace { display: grid; gap: 14px; }
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.profile-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.88);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.profile-panel h3 { font-size: 15px; color: var(--ink); }
+.profile-panel p { font-size: 12px; line-height: 1.65; color: var(--muted); }
+.profile-doc {
+  border: 1px solid #f2d6cc;
+  border-radius: 10px;
+  background: #fffdfb;
+  padding: 11px;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  max-height: 210px;
+  overflow: auto;
+}
+.profile-kv {
+  display: grid;
+  gap: 7px;
+}
+.profile-kv-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.profile-kv-row strong { color: var(--muted); font-weight: 800; }
+.profile-kv-row span { color: var(--ink); overflow-wrap: anywhere; }
+.profile-candidates {
+  display: grid;
+  gap: 8px;
+}
+.profile-candidate {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffaf7;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.profile-candidate-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.profile-candidate-title { font-size: 13px; font-weight: 850; color: var(--ink); }
+.profile-candidate-preview { font-size: 12px; line-height: 1.6; color: var(--muted); white-space: pre-wrap; max-height: 110px; overflow: auto; }
+.profile-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-action {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--coral-dark);
+  padding: 0 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+}
+.profile-action.primary { background: var(--coral); border-color: var(--coral); color: #fff; }
+.profile-action:disabled { opacity: .45; cursor: not-allowed; }
+.profile-note {
+  border-left: 3px solid var(--coral);
+  background: #fff7f2;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+@media (max-width: 980px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
 /* Memory page P1 */
 .memory-workspace { display: grid; gap: 14px; }
 .memory-summary-grid {
@@ -818,12 +904,43 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
       </section>
 
       <section class="content-view" id="profileView" aria-label="画像页">
-        <div class="view-head"><div><h2>画像</h2><p>区分用户事实、Kiro 状态、关系天气和最近连续性，避免把状态误写成事实。</p></div></div>
-        <div class="feature-grid">
-          <article class="feature-card"><h3>用户画像</h3><p>只放证据充分、已经确认的长期事实。</p></article>
-          <article class="feature-card"><h3>Kiro 状态</h3><p>记录 AI 的当前状态、表达偏好和内在节奏。</p></article>
-          <article class="feature-card"><h3>关系天气</h3><p>作为回复后的关系状态评估，不作为用户事实注入。</p></article>
-          <article class="feature-card"><h3>最近连续性</h3><p>保留上一个 session 的轻量接续信息。</p></article>
+        <div class="view-head">
+          <div>
+            <h2>画像</h2>
+            <p>画像分层展示：用户事实、Kiro 自身状态、关系天气、最近连续性。候选必须审核后才进入稳定画像。</p>
+          </div>
+          <button class="drawer-action" id="profilePageRefreshBtn" type="button">刷新</button>
+        </div>
+        <div class="profile-workspace">
+          <div class="profile-note">Relationship Weather 是回复后的关系/状态评估，不是用户事实；I State 是 Kiro 的自我理解，也不写入用户画像。</div>
+          <div class="profile-grid">
+            <section class="profile-panel">
+              <h3>用户画像</h3>
+              <div class="profile-doc" id="userPortraitDoc">正在读取...</div>
+            </section>
+            <section class="profile-panel">
+              <h3>Kiro 状态</h3>
+              <div class="profile-kv" id="kiroStatePanel"></div>
+              <div class="profile-doc" id="iStatePreview">正在读取...</div>
+            </section>
+            <section class="profile-panel">
+              <h3>关系天气</h3>
+              <div class="profile-kv" id="relationshipWeatherPanel"></div>
+            </section>
+            <section class="profile-panel">
+              <h3>最近连续性</h3>
+              <div class="profile-doc" id="recentContinuityDoc">正在读取...</div>
+            </section>
+          </div>
+          <section class="profile-panel">
+            <div class="profile-candidate-head">
+              <h3>事实候选审批</h3>
+              <span class="status-chip warn" id="profileCandidateCount">0 条</span>
+            </div>
+            <div class="profile-candidates" id="profileCandidateList">
+              <div class="memory-empty">正在读取候选...</div>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -1222,6 +1339,14 @@ const memorySummaryGrid = document.getElementById('memorySummaryGrid');
 const memoryRebuildWordMapBtn = document.getElementById('memoryRebuildWordMapBtn');
 const memoryVectorRebuildBtn = document.getElementById('memoryVectorRebuildBtn');
 const memoryArchivePreviewBtn = document.getElementById('memoryArchivePreviewBtn');
+const profilePageRefreshBtn = document.getElementById('profilePageRefreshBtn');
+const userPortraitDoc = document.getElementById('userPortraitDoc');
+const kiroStatePanel = document.getElementById('kiroStatePanel');
+const iStatePreview = document.getElementById('iStatePreview');
+const relationshipWeatherPanel = document.getElementById('relationshipWeatherPanel');
+const recentContinuityDoc = document.getElementById('recentContinuityDoc');
+const profileCandidateList = document.getElementById('profileCandidateList');
+const profileCandidateCount = document.getElementById('profileCandidateCount');
 
 // ========== 状态 ==========
 let recording = false;
@@ -1235,6 +1360,7 @@ let historyAuthPromptOpen = false;
 let memoryPageItems = [];
 let selectedMemoryItemId = null;
 let memoryPageLoaded = false;
+let profilePageLoaded = false;
 
 
 function truncateText(value, limit = 180) {
@@ -1436,6 +1562,129 @@ async function reviewMemoryCandidate(item, action) {
     refreshMemoryRuntimeState({ silent: true });
   } catch (error) {
     showStatus('候选处理失败：' + (error.message || error), true);
+  }
+}
+
+
+function setDocText(el, text, fallback = '暂无内容。') {
+  if (!el) return;
+  el.textContent = truncateText(text || fallback, 1400);
+}
+
+function renderKvPanel(el, rows = []) {
+  if (!el) return;
+  el.innerHTML = '';
+  rows.forEach(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'profile-kv-row';
+    const key = document.createElement('strong');
+    key.textContent = label;
+    const val = document.createElement('span');
+    val.textContent = value || '暂无';
+    row.appendChild(key);
+    row.appendChild(val);
+    el.appendChild(row);
+  });
+}
+
+function parseProfileCandidateTitle(candidate) {
+  const preview = String(candidate.preview || '');
+  const match = preview.match(/^#\s+(.+)$/m);
+  return match ? match[1].trim() : (candidate.name || '画像候选');
+}
+
+function renderProfileCandidates(candidates = []) {
+  if (!profileCandidateList) return;
+  if (profileCandidateCount) profileCandidateCount.textContent = candidates.length + ' 条';
+  if (!candidates.length) {
+    profileCandidateList.innerHTML = '<div class="memory-empty">当前没有待查看的画像候选。</div>';
+    return;
+  }
+  profileCandidateList.innerHTML = '';
+  candidates.forEach(candidate => {
+    const card = document.createElement('article');
+    card.className = 'profile-candidate';
+    const title = parseProfileCandidateTitle(candidate);
+    const canReview = !/status:\s*(approved|rejected)/i.test(candidate.preview || '');
+    card.innerHTML = `
+      <div class="profile-candidate-head">
+        <span class="profile-candidate-title"></span>
+        <span class="memory-kind candidate">${canReview ? '待审核' : '已处理'}</span>
+      </div>
+      <div class="profile-candidate-preview"></div>
+      <div class="profile-actions">
+        <button class="profile-action primary" type="button" data-profile-action="approve" ${canReview ? '' : 'disabled'}>确认事实</button>
+        <button class="profile-action" type="button" data-profile-action="reject" ${canReview ? '' : 'disabled'}>忽略</button>
+      </div>
+    `;
+    card.querySelector('.profile-candidate-title').textContent = title;
+    card.querySelector('.profile-candidate-preview').textContent = truncateText(candidate.preview || '', 520);
+    card.querySelectorAll('[data-profile-action]').forEach(button => {
+      button.addEventListener('click', () => reviewProfileCandidate(candidate, button.dataset.profileAction));
+    });
+    profileCandidateList.appendChild(card);
+  });
+}
+
+async function loadProfilePageData(options = {}) {
+  if (!userPortraitDoc || !relationshipWeatherPanel) return;
+  if (!options.silent) {
+    setDocText(userPortraitDoc, '正在读取...');
+    if (profileCandidateList) profileCandidateList.innerHTML = '<div class="memory-empty">正在读取候选...</div>';
+  }
+  try {
+    const [profiles, candidatesData, personaState, innerState] = await Promise.all([
+      apiJson('/api/profile'),
+      apiJson('/api/profile/candidates'),
+      apiJson('/api/persona-state'),
+      apiJson('/api/inner-state')
+    ]);
+    if (!profiles.user_portrait && profiles.raw) throw new Error('当前 API_BASE 没有返回画像接口，请确认后端地址。');
+    setDocText(userPortraitDoc, profiles.user_portrait);
+    setDocText(recentContinuityDoc, profiles.recent_continuity);
+    setDocText(iStatePreview, innerState.i_state_preview || '暂无 I State 内容。');
+    const state = personaState.state || personaState;
+    const weather = state.relationship_weather || {};
+    const current = state.current || {};
+    renderKvPanel(relationshipWeatherPanel, [
+      ['天气', weather.label || 'quiet'],
+      ['关系变化', weather.relationship_delta || current.relationship_delta || 'stable'],
+      ['情绪词', weather.mood_label || current.mood_label || 'quiet'],
+      ['来源', weather.source || current.source || 'unknown'],
+      ['说明', weather.tone || current.residue || '暂无']
+    ]);
+    renderKvPanel(kiroStatePanel, [
+      ['模式', state.mode || personaState.mode || '暂无'],
+      ['事件数', String(state.event_count ?? personaState.event_count ?? 0)],
+      ['更新', formatMemoryDate(state.updated_at || personaState.updated_at)],
+      ['Feel 候选', String((innerState.feel_candidates || []).length)],
+      ['I 候选', String((innerState.i_candidates || []).length)]
+    ]);
+    renderProfileCandidates(candidatesData.candidates || []);
+    profilePageLoaded = true;
+    if (!options.silent) {
+      showStatus('画像页已刷新', false);
+      setTimeout(hideStatus, 1200);
+    }
+  } catch (error) {
+    setDocText(userPortraitDoc, '读取失败：' + (error.message || error));
+    showStatus('画像页读取失败：' + (error.message || error), true);
+  }
+}
+
+async function reviewProfileCandidate(candidate, action) {
+  const name = candidate.name || (candidate.file || '').split(/[\\/]/).pop();
+  if (!name) return;
+  try {
+    await apiJson(`/api/profile/candidates/${encodeURIComponent(name)}/${action}`, {
+      method: 'POST',
+      body: { reviewer: 'web', reason: action === 'reject' ? 'Rejected from Kiro Web profile page' : '' }
+    });
+    showStatus(action === 'approve' ? '画像候选已确认' : '画像候选已忽略', false);
+    await loadProfilePageData({ silent: true });
+    refreshMemoryRuntimeState({ silent: true });
+  } catch (error) {
+    showStatus('画像候选处理失败：' + (error.message || error), true);
   }
 }
 
@@ -2286,6 +2535,7 @@ function switchMainView(view) {
   });
   if (chatWrap) chatWrap.classList.toggle('view-mode', !isChat);
   if (view === 'memory' && !memoryPageLoaded) loadMemoryPageData({ silent: true });
+  if (view === 'profile' && !profilePageLoaded) loadProfilePageData({ silent: true });
 }
 navItems.forEach(item => {
   item.addEventListener('click', () => switchMainView(item.dataset.view || 'chat'));
@@ -2397,6 +2647,10 @@ document.addEventListener('keydown', event => {
 document.querySelectorAll('[data-starter]').forEach(button => {
   button.addEventListener('click', () => fillStarterPrompt(button.dataset.starter || ''));
 });
+
+if (profilePageRefreshBtn) {
+  profilePageRefreshBtn.addEventListener('click', () => loadProfilePageData({ silent: false }));
+}
 
 if (memoryPageRefreshBtn) {
   memoryPageRefreshBtn.addEventListener('click', () => loadMemoryPageData({ silent: false }));
