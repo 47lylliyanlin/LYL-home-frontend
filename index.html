@@ -452,6 +452,112 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
 
 
 
+
+/* Settings page P1 */
+.settings-workspace { display: grid; gap: 14px; }
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.1fr) minmax(260px, .9fr);
+  gap: 12px;
+}
+.settings-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.9);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.settings-card h3 { font-size: 15px; color: var(--ink); }
+.settings-card p { font-size: 12px; line-height: 1.65; color: var(--muted); }
+.settings-card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.settings-row { display: grid; gap: 7px; }
+.settings-row label { font-size: 12px; color: var(--ink); font-weight: 850; }
+.settings-field {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #f1cfc4;
+  border-radius: 10px;
+  background: #fffdfb;
+  color: var(--ink);
+  padding: 0 11px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.settings-field:focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(255,107,74,.12); }
+.settings-inline { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.settings-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.settings-action {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--coral-dark);
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+}
+.settings-action.primary { background: var(--coral); border-color: var(--coral); color: #fff; }
+.settings-action:hover { border-color: var(--coral); background: var(--surface-soft); }
+.settings-note {
+  border-left: 3px solid var(--teal);
+  background: #f7fffb;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.settings-provider-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.settings-provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 10px;
+  background: #fffaf7;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+.settings-provider span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.settings-provider.active span { background: var(--teal); }
+.settings-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.settings-metric {
+  border: 1px solid #f2d6cc;
+  border-radius: 10px;
+  background: #fffdfb;
+  padding: 10px;
+  display: grid;
+  gap: 7px;
+}
+.settings-metric strong { font-size: 12px; color: var(--muted); }
+.settings-metric input { width: 100%; accent-color: var(--coral); }
+.settings-metric-value { font-size: 22px; line-height: 1; font-weight: 900; color: var(--ink); }
+.settings-link-preview {
+  border: 1px dashed #e7b7a8;
+  border-radius: 10px;
+  padding: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  background: #fffaf7;
+}
+@media (max-width: 980px) {
+  .settings-grid { grid-template-columns: 1fr; }
+  .settings-inline { grid-template-columns: 1fr; }
+}
+
 /* Profile page P1 */
 .profile-workspace { display: grid; gap: 14px; }
 .profile-grid {
@@ -1262,12 +1368,104 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
       </section>
 
       <section class="content-view" id="settingsView" aria-label="设置页">
-        <div class="view-head"><div><h2>设置</h2><p>模型路由、语音、多端同步和记忆策略会集中到这里，不挤占主聊天。</p></div></div>
-        <div class="feature-grid">
-          <article class="feature-card"><h3>模型与路由</h3><p>后续支持 Gemini / GPT / Claude / GLM 的切换与健康状态。</p></article>
-          <article class="feature-card"><h3>语音与输入</h3><p>管理录音、转写、发送方式和文件入口。</p></article>
-          <article class="feature-card"><h3>多端同步</h3><p>管理 session_id、同步链接和 PWA 使用方式。</p></article>
-          <article class="feature-card"><h3>记忆策略</h3><p>配置短期上下文、醒醒锚点和高级调试入口。</p></article>
+        <div class="view-head">
+          <div>
+            <h2>设置</h2>
+            <p>把模型连接、同步会话、短期上下文和语音入口放在这里，主聊天区保持干净。</p>
+          </div>
+          <button class="drawer-action" id="settingsRefreshBtn" type="button">刷新状态</button>
+        </div>
+        <div class="settings-workspace">
+          <div class="settings-note">模型供应商由后端环境变量决定；这里先管理前端连接地址、session_id 和会消耗 token 的短期上下文参数。</div>
+          <div class="settings-grid">
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <h3>模型与连接</h3>
+                <span class="status-chip" id="settingsConnectionChip">读取中</span>
+              </div>
+              <p id="settingsProviderStatus">正在读取前端连接状态。</p>
+              <div class="settings-provider-list" aria-label="支持的模型供应商">
+                <span class="settings-provider active"><span></span>Gemini</span>
+                <span class="settings-provider"><span></span>GPT</span>
+                <span class="settings-provider"><span></span>Claude</span>
+                <span class="settings-provider"><span></span>GLM</span>
+              </div>
+              <div class="settings-row">
+                <label for="settingsApiBaseInput">前端连接地址</label>
+                <div class="settings-inline">
+                  <input class="settings-field" id="settingsApiBaseInput" type="text" spellcheck="false" placeholder="http://localhost:8000">
+                  <button class="settings-action primary" id="settingsApplyApiBtn" type="button">保存并刷新</button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <label for="settingsAdminTokenInput">管理口令</label>
+                <div class="settings-inline">
+                  <input class="settings-field" id="settingsAdminTokenInput" type="password" autocomplete="off" placeholder="用于维护/审批接口，可留空">
+                  <div class="settings-actions">
+                    <button class="settings-action" id="settingsSaveTokenBtn" type="button">保存</button>
+                    <button class="settings-action" id="settingsClearTokenBtn" type="button">清除</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <h3>多端同步</h3>
+                <span class="status-chip" id="settingsSessionChip">session</span>
+              </div>
+              <p>同一个 session_id 会读取同一段会话历史，适合手机端和网页端接续。</p>
+              <div class="settings-row">
+                <label for="settingsSessionInput">当前 session_id</label>
+                <input class="settings-field" id="settingsSessionInput" type="text" spellcheck="false">
+              </div>
+              <div class="settings-actions">
+                <button class="settings-action primary" id="settingsApplySessionBtn" type="button">切换会话</button>
+                <button class="settings-action" id="settingsNewSessionBtn" type="button">新建会话</button>
+                <button class="settings-action" id="settingsCopySessionBtn" type="button">复制同步链接</button>
+              </div>
+              <div class="settings-link-preview" id="settingsSessionLink">同步链接正在生成。</div>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <h3>短期上下文</h3>
+                <span class="status-chip warn" id="settingsContextChip">本机生效</span>
+              </div>
+              <p id="settingsContextSummary">调整“刚刚/上一句”这类短期上下文注入范围，不等于长期记忆。</p>
+              <div class="settings-metrics">
+                <label class="settings-metric">
+                  <strong>轮数</strong>
+                  <span class="settings-metric-value" id="settingsTurnsValue">4</span>
+                  <input id="settingsTurnsInput" type="range" min="1" max="20" step="1">
+                </label>
+                <label class="settings-metric">
+                  <strong>单条字符</strong>
+                  <span class="settings-metric-value" id="settingsCharsValue">180</span>
+                  <input id="settingsCharsInput" type="range" min="100" max="4000" step="100">
+                </label>
+              </div>
+              <div class="settings-actions">
+                <button class="settings-action" type="button" data-context-step="turns:-1">轮数 -</button>
+                <button class="settings-action" type="button" data-context-step="turns:1">轮数 +</button>
+                <button class="settings-action" type="button" data-context-step="chars:-100">字符 -</button>
+                <button class="settings-action" type="button" data-context-step="chars:100">字符 +</button>
+                <button class="settings-action primary" id="settingsApplyContextBtn" type="button">应用</button>
+              </div>
+            </section>
+
+            <section class="settings-card">
+              <div class="settings-card-head">
+                <h3>语音与输入</h3>
+                <span class="status-chip dream">基础</span>
+              </div>
+              <p>语音发送使用后端语音聊天接口；录音按钮保留在主聊区输入框右侧，避免和发送按钮抢位置。</p>
+              <div class="settings-actions">
+                <button class="settings-action primary" id="settingsVoiceBtn" type="button">去主聊区录音</button>
+              </div>
+              <div class="settings-note">后续可以在这里加入转写语言、自动播放、按键发送和文件上传策略。</div>
+            </section>
+          </div>
         </div>
       </section>
 
@@ -1434,7 +1632,7 @@ function getMemoryContextSettings() {
   const chars = parseInt(localStorage.getItem(RECENT_CHAR_LIMIT_KEY) || '180', 10);
   return {
     recent_turns_count: Number.isFinite(turns) ? Math.max(0, Math.min(turns, 20)) : 4,
-    recent_char_limit: Number.isFinite(chars) ? Math.max(40, Math.min(chars, 1000)) : 180
+    recent_char_limit: Number.isFinite(chars) ? Math.max(40, Math.min(chars, 4000)) : 180
   };
 }
 
@@ -1444,7 +1642,7 @@ function setMemoryContextSettings(settings = {}) {
     localStorage.setItem(RECENT_TURNS_KEY, String(turns));
   }
   if (settings.recent_char_limit !== undefined) {
-    const chars = Math.max(40, Math.min(parseInt(settings.recent_char_limit, 10) || 180, 1000));
+    const chars = Math.max(40, Math.min(parseInt(settings.recent_char_limit, 10) || 180, 4000));
     localStorage.setItem(RECENT_CHAR_LIMIT_KEY, String(chars));
   }
   return getMemoryContextSettings();
@@ -1645,6 +1843,27 @@ const themeBtn = document.getElementById('themeBtn');
 const moreBtn = document.getElementById('moreBtn');
 const moreMenu = document.getElementById('moreMenu');
 const copySessionMenuBtn = document.getElementById('copySessionMenuBtn');
+const settingsRefreshBtn = document.getElementById('settingsRefreshBtn');
+const settingsConnectionChip = document.getElementById('settingsConnectionChip');
+const settingsProviderStatus = document.getElementById('settingsProviderStatus');
+const settingsApiBaseInput = document.getElementById('settingsApiBaseInput');
+const settingsApplyApiBtn = document.getElementById('settingsApplyApiBtn');
+const settingsAdminTokenInput = document.getElementById('settingsAdminTokenInput');
+const settingsSaveTokenBtn = document.getElementById('settingsSaveTokenBtn');
+const settingsClearTokenBtn = document.getElementById('settingsClearTokenBtn');
+const settingsSessionChip = document.getElementById('settingsSessionChip');
+const settingsSessionInput = document.getElementById('settingsSessionInput');
+const settingsApplySessionBtn = document.getElementById('settingsApplySessionBtn');
+const settingsNewSessionBtn = document.getElementById('settingsNewSessionBtn');
+const settingsCopySessionBtn = document.getElementById('settingsCopySessionBtn');
+const settingsSessionLink = document.getElementById('settingsSessionLink');
+const settingsContextSummary = document.getElementById('settingsContextSummary');
+const settingsTurnsValue = document.getElementById('settingsTurnsValue');
+const settingsCharsValue = document.getElementById('settingsCharsValue');
+const settingsTurnsInput = document.getElementById('settingsTurnsInput');
+const settingsCharsInput = document.getElementById('settingsCharsInput');
+const settingsApplyContextBtn = document.getElementById('settingsApplyContextBtn');
+const settingsVoiceBtn = document.getElementById('settingsVoiceBtn');
 const openMemoryMenuBtn = document.getElementById('openMemoryMenuBtn');
 const clearLocalChatBtn = document.getElementById('clearLocalChatBtn');
 const memoryPageRefreshBtn = document.getElementById('memoryPageRefreshBtn');
@@ -2262,6 +2481,59 @@ function firstDefined(...values) {
   return values.find(value => value !== undefined && value !== null && value !== '');
 }
 
+
+function buildCurrentSessionLink() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('session_id', currentSessionId);
+  return url.toString();
+}
+
+function updateSettingsPageState(state = KiroMemoryRuntime) {
+  const settings = state.contextSettings || getMemoryContextSettings();
+  const turns = Number(settings.recent_turns_count || 0);
+  const chars = Number(settings.recent_char_limit || 0);
+  const errors = Array.isArray(state.errors) ? state.errors : [];
+  if (settingsConnectionChip) settingsConnectionChip.textContent = state.ready && !errors.length ? '已连接' : (errors.length ? '需检查' : '读取中');
+  if (settingsProviderStatus) {
+    const suffix = errors.length ? `；有 ${errors.length} 项后台状态读取失败` : '；后台状态正常';
+    settingsProviderStatus.textContent = `当前前端连接：${API_BASE}${suffix}。模型供应商在后端 .env 中切换。`;
+  }
+  if (settingsApiBaseInput && document.activeElement !== settingsApiBaseInput) settingsApiBaseInput.value = API_BASE;
+  if (settingsAdminTokenInput && document.activeElement !== settingsAdminTokenInput) {
+    settingsAdminTokenInput.placeholder = localStorage.getItem(ADMIN_TOKEN_KEY) ? '已保存，重新输入可覆盖' : '用于维护/审批接口，可留空';
+  }
+  if (settingsSessionChip) settingsSessionChip.textContent = state.ready ? '已同步' : '本地';
+  if (settingsSessionInput && document.activeElement !== settingsSessionInput) settingsSessionInput.value = currentSessionId;
+  if (settingsSessionLink) settingsSessionLink.textContent = buildCurrentSessionLink();
+  if (settingsTurnsValue) settingsTurnsValue.textContent = String(turns);
+  if (settingsCharsValue) settingsCharsValue.textContent = String(chars);
+  if (settingsTurnsInput && document.activeElement !== settingsTurnsInput) settingsTurnsInput.value = String(turns);
+  if (settingsCharsInput && document.activeElement !== settingsCharsInput) settingsCharsInput.value = String(chars);
+  if (settingsContextSummary) {
+    settingsContextSummary.textContent = `当前短期上下文：最近 ${turns} 轮，每条最多 ${chars} 字。它只服务当前/上一句接续，不写入长期记忆。`;
+  }
+}
+
+function saveApiBaseAndReload() {
+  const raw = (settingsApiBaseInput?.value || '').trim();
+  if (raw) localStorage.setItem('kiro_api_base', raw.replace(/\/+$/, ''));
+  else localStorage.removeItem('kiro_api_base');
+  showStatus('连接地址已保存，正在刷新页面', false);
+  setTimeout(() => window.location.reload(), 350);
+}
+
+function applySettingsContextInputs(showToast = false) {
+  setMemoryContextSettings({
+    recent_turns_count: settingsTurnsInput?.value,
+    recent_char_limit: settingsCharsInput?.value
+  });
+  publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
+  if (showToast) {
+    showStatus('短期上下文设置已应用', false);
+    setTimeout(hideStatus, 1200);
+  }
+}
+
 function updateMemoryDrawerState(state = KiroMemoryRuntime) {
   const settings = state.contextSettings || getMemoryContextSettings();
   const turns = Number(settings.recent_turns_count || 0);
@@ -2306,10 +2578,11 @@ function updateMemoryDrawerState(state = KiroMemoryRuntime) {
   if (turnsValue) turnsValue.textContent = String(turns);
   if (charsValue) charsValue.textContent = String(chars);
   if (turnsBar) turnsBar.style.width = `${Math.max(6, Math.min(100, turns / 20 * 100))}%`;
-  if (charsBar) charsBar.style.width = `${Math.max(6, Math.min(100, chars / 1000 * 100))}%`;
+  if (charsBar) charsBar.style.width = `${Math.max(6, Math.min(100, chars / 4000 * 100))}%`;
   if (sideStatusText) {
     sideStatusText.innerHTML = `关系天气：稳定<br>Dream：${dreamUpdated ? '已更新' : '待观察'}<br>维护：${maintenanceOk ? '正常' : '需检查'}`;
   }
+  updateSettingsPageState(state);
 }
 
 // ========== 聊天记录保存/加载 ==========
@@ -2992,6 +3265,74 @@ if (modelPill && modelPopover) {
     modelPill.setAttribute('aria-expanded', String(opening));
   });
 }
+
+if (settingsRefreshBtn) {
+  settingsRefreshBtn.addEventListener('click', async () => {
+    await refreshMemoryRuntimeState({ silent: false });
+    showStatus('设置状态已刷新', false);
+    setTimeout(hideStatus, 1200);
+  });
+}
+if (settingsApplyApiBtn) settingsApplyApiBtn.addEventListener('click', saveApiBaseAndReload);
+if (settingsSaveTokenBtn) {
+  settingsSaveTokenBtn.addEventListener('click', async () => {
+    localStorage.setItem(ADMIN_TOKEN_KEY, String(settingsAdminTokenInput?.value || '').trim());
+    if (settingsAdminTokenInput) settingsAdminTokenInput.value = '';
+    await refreshMemoryRuntimeState({ silent: true });
+    showStatus('管理口令已保存', false);
+    setTimeout(hideStatus, 1200);
+  });
+}
+if (settingsClearTokenBtn) {
+  settingsClearTokenBtn.addEventListener('click', async () => {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    if (settingsAdminTokenInput) settingsAdminTokenInput.value = '';
+    await refreshMemoryRuntimeState({ silent: true });
+    showStatus('管理口令已清除', false);
+    setTimeout(hideStatus, 1200);
+  });
+}
+if (settingsApplySessionBtn) {
+  settingsApplySessionBtn.addEventListener('click', async () => {
+    setSessionId(settingsSessionInput?.value);
+    publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
+    await loadCloudOrLocalChatHistory({ silent: true });
+    showStatus('已切换会话', false);
+    setTimeout(hideStatus, 1200);
+  });
+}
+if (settingsNewSessionBtn) {
+  settingsNewSessionBtn.addEventListener('click', () => {
+    switchMainView('chat');
+    currentSessionId = startNewSession();
+    publishMemoryRuntimeState({ ready: KiroMemoryRuntime.ready });
+    showStatus('已新建会话', false);
+    setTimeout(hideStatus, 1200);
+  });
+}
+if (settingsCopySessionBtn) {
+  settingsCopySessionBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(buildCurrentSessionLink());
+      showStatus('已复制同步链接', false);
+      setTimeout(hideStatus, 1200);
+    } catch (error) {
+      showStatus('复制失败，请手动复制同步链接', true);
+    }
+  });
+}
+if (settingsTurnsInput) settingsTurnsInput.addEventListener('input', applySettingsContextInputs);
+if (settingsCharsInput) settingsCharsInput.addEventListener('input', applySettingsContextInputs);
+if (settingsApplyContextBtn) settingsApplyContextBtn.addEventListener('click', () => applySettingsContextInputs(true));
+if (settingsVoiceBtn) {
+  settingsVoiceBtn.addEventListener('click', () => {
+    switchMainView('chat');
+    if (micBtn) micBtn.focus();
+    showStatus('已回到主聊区，可以点击语音开始录音', false);
+    setTimeout(hideStatus, 1600);
+  });
+}
+
 if (refreshBackendBtn) {
   refreshBackendBtn.addEventListener('click', () => {
     closeFloatingPanels();
