@@ -643,6 +643,113 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
   .profile-grid { grid-template-columns: 1fr; }
 }
 
+
+/* Profile page P2 */
+.profile-layer-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.profile-layer-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffdfb;
+  padding: 12px;
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.profile-layer-card strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+.profile-layer-card span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.profile-layer-card .profile-layer-value {
+  color: var(--coral-dark);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 900;
+}
+.profile-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+.profile-panel-title {
+  display: grid;
+  gap: 3px;
+}
+.profile-panel-title h3 {
+  font-size: 15px;
+  color: var(--ink);
+}
+.profile-panel-title p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.profile-mini-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.profile-doc.compact {
+  max-height: 150px;
+}
+.profile-status-note {
+  border: 1px solid #f2d6cc;
+  border-radius: 10px;
+  background: #fffaf7;
+  padding: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.profile-weather-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  padding: 5px 9px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 850;
+}
+.profile-weather-badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+.profile-candidate-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.profile-candidate-meta span {
+  border: 1px solid #f2d6cc;
+  border-radius: 999px;
+  background: #fffdfb;
+  padding: 3px 7px;
+}
+@media (max-width: 980px) {
+  .profile-layer-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .profile-layer-strip { grid-template-columns: 1fr; }
+}
+
 /* Memory page P1 */
 .memory-workspace { display: grid; gap: 14px; }
 .memory-summary-grid {
@@ -1433,29 +1540,68 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
           <button class="drawer-action" id="profilePageRefreshBtn" type="button">刷新</button>
         </div>
         <div class="profile-workspace">
-          <div class="profile-note">Relationship Weather 是回复后的关系/状态评估，不是用户事实；I State 是 Kiro 的自我理解，也不写入用户画像。</div>
+          <div class="profile-note">Relationship Weather 是回复后的关系/状态评估；I State 是 Kiro 的自我理解；User Portrait 才是审核后的稳定事实。</div>
+          <div class="profile-layer-strip" id="profileLayerStrip" aria-label="画像分层摘要">
+            <section class="profile-layer-card"><strong>长期事实</strong><span class="profile-layer-value" id="profileUserFactCount">--</span><span>来自 User Portrait，不把临时状态当事实。</span></section>
+            <section class="profile-layer-card"><strong>Kiro 状态</strong><span class="profile-layer-value" id="profileKiroStateCount">--</span><span>Persona / I State / Feel 候选分开看。</span></section>
+            <section class="profile-layer-card"><strong>关系天气</strong><span class="profile-layer-value" id="profileWeatherValue">--</span><span>用于观察回复后的关系状态变化。</span></section>
+            <section class="profile-layer-card"><strong>最近连续性</strong><span class="profile-layer-value" id="profileContinuityCount">--</span><span>帮助新窗口知道上一段进度。</span></section>
+          </div>
           <div class="profile-grid">
             <section class="profile-panel">
-              <h3>用户画像</h3>
+              <div class="profile-panel-head">
+                <div class="profile-panel-title">
+                  <h3>用户画像</h3>
+                  <p>只放证据充分、已经确认的长期事实。</p>
+                </div>
+                <span class="status-chip ok">稳定事实</span>
+              </div>
               <div class="profile-doc" id="userPortraitDoc">正在读取...</div>
             </section>
             <section class="profile-panel">
-              <h3>Kiro 状态</h3>
+              <div class="profile-panel-head">
+                <div class="profile-panel-title">
+                  <h3>Kiro 状态</h3>
+                  <p>区分 Persona、I State 和待消化的内在候选。</p>
+                </div>
+                <span class="status-chip dream">自身状态</span>
+              </div>
               <div class="profile-kv" id="kiroStatePanel"></div>
-              <div class="profile-doc" id="iStatePreview">正在读取...</div>
+              <div class="profile-mini-label">Assistant Persona</div>
+              <div class="profile-doc compact" id="assistantPersonaDoc">正在读取...</div>
+              <div class="profile-mini-label">I State Preview</div>
+              <div class="profile-doc compact" id="iStatePreview">正在读取...</div>
             </section>
             <section class="profile-panel">
-              <h3>关系天气</h3>
+              <div class="profile-panel-head">
+                <div class="profile-panel-title">
+                  <h3>关系天气</h3>
+                  <p>不是用户事实，更像关系状态仪表。</p>
+                </div>
+                <span class="profile-weather-badge" id="profileWeatherBadge">quiet</span>
+              </div>
               <div class="profile-kv" id="relationshipWeatherPanel"></div>
+              <div class="profile-mini-label">Relationship Portrait</div>
+              <div class="profile-doc compact" id="relationshipPortraitDoc">正在读取...</div>
             </section>
             <section class="profile-panel">
-              <h3>最近连续性</h3>
+              <div class="profile-panel-head">
+                <div class="profile-panel-title">
+                  <h3>最近连续性</h3>
+                  <p>给新窗口接住上一段项目进度，不等于完整 Profile Wake。</p>
+                </div>
+                <span class="status-chip">接续</span>
+              </div>
               <div class="profile-doc" id="recentContinuityDoc">正在读取...</div>
+              <div class="profile-status-note" id="profileContinuityNote">连续对话时主要依赖 session history；新窗口首轮才更需要轻量接续。</div>
             </section>
           </div>
           <section class="profile-panel">
             <div class="profile-candidate-head">
-              <h3>事实候选审批</h3>
+              <div class="profile-panel-title">
+                <h3>事实候选审批</h3>
+                <p>候选必须被确认后才进入 User Portrait。</p>
+              </div>
               <span class="status-chip warn" id="profileCandidateCount">0 条</span>
             </div>
             <div class="profile-candidates" id="profileCandidateList">
@@ -2434,6 +2580,23 @@ function renderKvPanel(el, rows = []) {
   });
 }
 
+
+function profileLineCount(text) {
+  return String(text || '').split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')).length;
+}
+
+function updateProfileLayerSummary(profiles = {}, candidates = [], personaState = {}, innerState = {}) {
+  const state = personaState.state || personaState || {};
+  const weather = state.relationship_weather || {};
+  const pending = candidates.filter(item => !/status:\s*(approved|rejected)/i.test(item.preview || '')).length;
+  if (profileUserFactCount) profileUserFactCount.textContent = String(profileLineCount(profiles.user_portrait));
+  if (profileKiroStateCount) profileKiroStateCount.textContent = String((innerState.feel_candidates || []).length + (innerState.i_candidates || []).length);
+  if (profileWeatherValue) profileWeatherValue.textContent = truncateText(weather.label || 'quiet', 12);
+  if (profileContinuityCount) profileContinuityCount.textContent = String(profileLineCount(profiles.recent_continuity));
+  if (profileCandidateCount) profileCandidateCount.textContent = pending + ' 待审 / ' + candidates.length + ' 总计';
+  if (profileWeatherBadge) profileWeatherBadge.textContent = weather.label || 'quiet';
+}
+
 function parseProfileCandidateTitle(candidate) {
   const preview = String(candidate.preview || '');
   const match = preview.match(/^#\s+(.+)$/m);
@@ -2442,7 +2605,8 @@ function parseProfileCandidateTitle(candidate) {
 
 function renderProfileCandidates(candidates = []) {
   if (!profileCandidateList) return;
-  if (profileCandidateCount) profileCandidateCount.textContent = candidates.length + ' 条';
+  const pending = candidates.filter(item => !/status:\s*(approved|rejected)/i.test(item.preview || '')).length;
+  if (profileCandidateCount) profileCandidateCount.textContent = pending + ' 待审 / ' + candidates.length + ' 总计';
   if (!candidates.length) {
     profileCandidateList.innerHTML = '<div class="memory-empty">当前没有待查看的画像候选。</div>';
     return;
@@ -2453,11 +2617,17 @@ function renderProfileCandidates(candidates = []) {
     card.className = 'profile-candidate';
     const title = parseProfileCandidateTitle(candidate);
     const canReview = !/status:\s*(approved|rejected)/i.test(candidate.preview || '');
+    const meta = [
+      candidate.name && '文件 ' + candidate.name,
+      candidate.updated_at && '更新 ' + formatMemoryDate(candidate.updated_at),
+      canReview ? '等待确认' : '已处理'
+    ].filter(Boolean);
     card.innerHTML = `
       <div class="profile-candidate-head">
         <span class="profile-candidate-title"></span>
         <span class="memory-kind candidate">${canReview ? '待审核' : '已处理'}</span>
       </div>
+      <div class="profile-candidate-meta"></div>
       <div class="profile-candidate-preview"></div>
       <div class="profile-actions">
         <button class="profile-action primary" type="button" data-profile-action="approve" ${canReview ? '' : 'disabled'}>确认事实</button>
@@ -2465,6 +2635,7 @@ function renderProfileCandidates(candidates = []) {
       </div>
     `;
     card.querySelector('.profile-candidate-title').textContent = title;
+    card.querySelector('.profile-candidate-meta').innerHTML = meta.map(item => '<span>' + escapeHtml(item) + '</span>').join('');
     card.querySelector('.profile-candidate-preview').textContent = truncateText(candidate.preview || '', 520);
     card.querySelectorAll('[data-profile-action]').forEach(button => {
       button.addEventListener('click', () => reviewProfileCandidate(candidate, button.dataset.profileAction));
@@ -2488,6 +2659,8 @@ async function loadProfilePageData(options = {}) {
     ]);
     if (!profiles.user_portrait && profiles.raw) throw new Error('当前 API_BASE 没有返回画像接口，请确认后端地址。');
     setDocText(userPortraitDoc, profiles.user_portrait);
+    setDocText(assistantPersonaDoc, profiles.assistant_persona);
+    setDocText(relationshipPortraitDoc, profiles.relationship_portrait);
     setDocText(recentContinuityDoc, profiles.recent_continuity);
     setDocText(iStatePreview, innerState.i_state_preview || '暂无 I State 内容。');
     const state = personaState.state || personaState;
@@ -2508,6 +2681,8 @@ async function loadProfilePageData(options = {}) {
       ['I 候选', String((innerState.i_candidates || []).length)]
     ]);
     renderProfileCandidates(candidatesData.candidates || []);
+    updateProfileLayerSummary(profiles, candidatesData.candidates || [], personaState, innerState);
+    if (profileContinuityNote) profileContinuityNote.textContent = state.current?.is_new_session ? '新 session 已启用轻量接续。' : '连续对话时主要依赖 session history；新窗口首轮才更需要轻量接续。';
     profilePageLoaded = true;
     if (!options.silent) {
       showStatus('画像页已刷新', false);
