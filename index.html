@@ -264,6 +264,101 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
 .play-time { font-size: 12px; color: var(--muted); min-width: 40px; text-align: right; }
 
 
+
+/* Main chat P2 */
+.chat-context-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.chat-context-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffaf7;
+  color: var(--muted);
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.chat-context-chip strong {
+  color: var(--coral-dark);
+  font-weight: 900;
+}
+.chat-context-chip .green-dot {
+  width: 6px;
+  height: 6px;
+}
+.empty-state {
+  position: relative;
+  overflow: hidden;
+}
+.empty-state::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--coral), var(--teal));
+}
+.empty-state h2 {
+  max-width: 420px;
+}
+.starter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.composer-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.composer-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+.composer-state span {
+  border: 1px solid #f2d6cc;
+  border-radius: 999px;
+  background: #fffaf7;
+  padding: 3px 8px;
+  color: var(--muted);
+  font-weight: 800;
+}
+.composer-shortcut {
+  white-space: nowrap;
+  opacity: .78;
+}
+.text-box {
+  box-shadow: 0 10px 28px rgba(107,52,30,.05);
+}
+.text-box:focus-within {
+  box-shadow: 0 0 0 4px rgba(255,107,74,.08), 0 12px 30px rgba(107,52,30,.07);
+}
+.send-btn[disabled],
+.voice-mode-btn[disabled],
+.sm-btn[disabled] {
+  opacity: .48;
+  cursor: not-allowed;
+}
+@media (max-width: 720px) {
+  .chat-context-strip { display: none; }
+  .composer-foot { align-items: flex-start; flex-direction: column; }
+  .composer-shortcut { display: none; }
+}
+
 /* Empty chat state */
 .empty-state {
   align-self: center;
@@ -1386,6 +1481,11 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
                 <button class="menu-action" type="button" id="refreshBackendBtn">刷新连接<span>↻</span></button>
               </div>
             </div>
+            <div class="chat-context-strip" aria-label="当前聊天状态">
+              <span class="chat-context-chip" id="chatSessionChip"><span class="green-dot"></span><strong>session</strong> 读取中</span>
+              <span class="chat-context-chip" id="chatMemoryModeChip"><strong>记忆</strong> 后台接续</span>
+              <span class="chat-context-chip" id="chatContextChip"><strong>短期</strong> 4 轮 / 180 字</span>
+            </div>
           </div>
         </div>
         <div class="header-actions">
@@ -1722,6 +1822,7 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
             <button class="starter-chip" type="button" data-starter="我们继续推进项目计划，先帮我整理下一步。">继续项目计划</button>
             <button class="starter-chip" type="button" data-starter="帮我总结一下当前记忆系统还需要优化的部分。">整理记忆优化</button>
             <button class="starter-chip" type="button" data-starter="先从 MVP 范围和时间线开始。">看 MVP 时间线</button>
+            <button class="starter-chip" type="button" data-starter="先告诉我你现在记得我们项目的哪些关键状态。">查看当前状态</button>
           </div>
         </section>
       </div>
@@ -1762,6 +1863,14 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
               </button>
             </div>
           </div>
+        </div>
+        <div class="composer-foot">
+          <div class="composer-state" id="composerState">
+            <span id="composerSessionState">session 读取中</span>
+            <span id="composerContextState">短期 4 轮 / 180 字</span>
+            <span id="composerMemoryState">记忆后台工作</span>
+          </div>
+          <div class="composer-shortcut">Enter 发送 · Shift+Enter 换行</div>
         </div>
         <div class="mic-hint" id="micHint">点击语音开始录音 · 再次点击结束</div>
       </section>
@@ -2047,6 +2156,12 @@ const chatInput = document.getElementById('chatInput');
 const chatBox = document.getElementById('messages');
 const emptyState = document.getElementById('emptyState');
 const chatWrap = document.querySelector('.chat-wrap');
+const chatSessionChip = document.getElementById('chatSessionChip');
+const chatMemoryModeChip = document.getElementById('chatMemoryModeChip');
+const chatContextChip = document.getElementById('chatContextChip');
+const composerSessionState = document.getElementById('composerSessionState');
+const composerContextState = document.getElementById('composerContextState');
+const composerMemoryState = document.getElementById('composerMemoryState');
 const navItems = Array.from(document.querySelectorAll('.nav-item[data-view]'));
 const contentViews = {
   memory: document.getElementById('memoryView'),
@@ -2158,6 +2273,16 @@ let memoryLayoutMode = 'list';
 let memoryPageLoaded = false;
 let profilePageLoaded = false;
 
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
 
 function truncateText(value, limit = 180) {
   const text = String(value || '').trim();
@@ -2837,6 +2962,30 @@ function setConnectionOnline(isOnline) {
     modelPill.innerHTML = `<span>Gemini · ${label}</span><span class="green-dot"></span>`;
     modelPill.classList.toggle('offline', !isOnline);
   }
+  updateMainChatStatus(KiroMemoryRuntime);
+}
+
+
+function shortSessionLabel(sessionId) {
+  const text = String(sessionId || '').trim();
+  if (!text) return '未设置';
+  return text.length > 18 ? text.slice(0, 10) + '...' + text.slice(-5) : text;
+}
+
+function updateMainChatStatus(state = KiroMemoryRuntime) {
+  const settings = state.contextSettings || getMemoryContextSettings();
+  const turns = Number(settings.recent_turns_count || 0);
+  const chars = Number(settings.recent_char_limit || 0);
+  const sessionLabel = shortSessionLabel(state.sessionId || currentSessionId);
+  const errors = Array.isArray(state.errors) ? state.errors : [];
+  const readyLabel = state.ready && !errors.length ? '已连接' : (errors.length ? '需检查' : '读取中');
+  const memoryLabel = state.lastGatewayContext?.is_new_session ? '新窗口锚点' : '后台接续';
+  if (chatSessionChip) chatSessionChip.innerHTML = '<span class="green-dot"></span><strong>session</strong> ' + escapeHtml(sessionLabel);
+  if (chatMemoryModeChip) chatMemoryModeChip.innerHTML = '<strong>记忆</strong> ' + escapeHtml(memoryLabel);
+  if (chatContextChip) chatContextChip.innerHTML = '<strong>短期</strong> ' + turns + ' 轮 / ' + chars + ' 字';
+  if (composerSessionState) composerSessionState.textContent = 'session ' + sessionLabel;
+  if (composerContextState) composerContextState.textContent = '短期 ' + turns + ' 轮 / ' + chars + ' 字';
+  if (composerMemoryState) composerMemoryState.textContent = '连接 ' + readyLabel;
 }
 
 function firstDefined(...values) {
@@ -2945,6 +3094,7 @@ function updateMemoryDrawerState(state = KiroMemoryRuntime) {
     sideStatusText.innerHTML = `关系天气：稳定<br>Dream：${dreamUpdated ? '已更新' : '待观察'}<br>维护：${maintenanceOk ? '正常' : '需检查'}`;
   }
   updateSettingsPageState(state);
+  updateMainChatStatus(state);
 }
 
 // ========== 聊天记录保存/加载 ==========
