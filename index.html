@@ -1627,6 +1627,49 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
   }
 }
 
+
+/* Mobile tab width fix */
+@media (max-width: 760px) {
+  .app-frame.drawer-closed {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+  .chat-wrap {
+    min-width: 0;
+  }
+  .status-bar {
+    padding: 8px 12px;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-frame,
+  .app-frame.drawer-closed {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .chat-wrap {
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+  }
+  .content-view {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .content-view.active {
+    display: block;
+  }
+  .memory-board,
+  .memory-main,
+  .memory-side,
+  .profile-workspace,
+  .settings-workspace {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 </style>
 </head>
 <body>
