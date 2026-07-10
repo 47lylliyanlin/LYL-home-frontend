@@ -1670,6 +1670,49 @@ body.focus-mode .app-frame { border-radius: 0; border-left: 0; border-right: 0; 
   }
 }
 
+
+/* Mobile scroll and voice feedback fix */
+.chat-wrap {
+  min-height: 0;
+  overflow: hidden;
+}
+.content-view {
+  flex: 1 1 auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.chat-wrap.view-mode .content-view.active {
+  min-height: 0;
+}
+
+@media (max-width: 760px) {
+  .chat-wrap.view-mode {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .content-view.active {
+    height: auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-frame {
+    height: 100%;
+  }
+  .chat-wrap {
+    height: 100%;
+  }
+  .content-view {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+  .chat-wrap.view-mode .content-view.active {
+    display: block;
+    flex: 1 1 auto;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -3695,53 +3738,87 @@ function addMessage(text, isUser = false, isVoice = false, audioDuration = 0, au
   return msgRow; // 返回创建的消息元素
 }
 
-// ========== 录音功能 ==========
-micBtn.addEventListener('click', async () => {
-  if (!recording) {
-    // 开始录音
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        await sendVoiceMessage(audioBlob);
-      };
-
-      mediaRecorder.start();
-      recording = true;
-      micBtn.classList.add('recording');
-      if (micBtnLabel) micBtnLabel.textContent = '停止';
-      recStatus.classList.remove('hidden');
-      micHint.textContent = '再次点击结束录音';
-      seconds = 0;
-      recTimer.textContent = '00:00';
-      timerInterval = setInterval(() => {
-        seconds++;
-        recTimer.textContent = formatTime(seconds);
-      }, 1000);
-      hideStatus();
-    } catch (error) {
-      console.error('录音失败:', error);
-      showStatus('录音失败：请允许麦克风权限', true);
-    }
-  } else {
-    // 停止录音
-    mediaRecorder.stop();
-    mediaRecorder.stream.getTracks().forEach(track => track.stop());
-    recording = false;
+function resetVoiceUi(message = '点击语音开始录音 · 再次点击结束') {
+  recording = false;
+  if (micBtn) {
     micBtn.classList.remove('recording');
-    if (micBtnLabel) micBtnLabel.textContent = '语音';
-    recStatus.classList.add('hidden');
-    micHint.textContent = '点击语音开始录音 · 再次点击结束';
-    clearInterval(timerInterval);
+    micBtn.disabled = false;
   }
-});
+  if (micBtnLabel) micBtnLabel.textContent = '语音';
+  if (recStatus) recStatus.classList.add('hidden');
+  if (micHint) micHint.textContent = message;
+  if (timerInterval) clearInterval(timerInterval);
+}
+
+function voiceUnavailableReason() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    return '当前打开方式不支持麦克风录音。请用 localhost 或 https 页面打开后再试。';
+  }
+  if (typeof MediaRecorder === 'undefined') {
+    return '当前浏览器不支持 MediaRecorder 录音。';
+  }
+  return '';
+}
+
+// ========== 录音功能 ==========
+if (micBtn) {
+  micBtn.addEventListener('click', async () => {
+    if (!recording) {
+      const unavailable = voiceUnavailableReason();
+      if (unavailable) {
+        showStatus('录音不可用：' + unavailable, true);
+        if (micHint) micHint.textContent = unavailable;
+        return;
+      }
+
+      try {
+        micBtn.disabled = true;
+        showStatus('正在请求麦克风权限...', false);
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+          await sendVoiceMessage(audioBlob);
+        };
+
+        mediaRecorder.start();
+        recording = true;
+        micBtn.disabled = false;
+        micBtn.classList.add('recording');
+        if (micBtnLabel) micBtnLabel.textContent = '停止';
+        if (recStatus) recStatus.classList.remove('hidden');
+        if (micHint) micHint.textContent = '再次点击结束录音';
+        seconds = 0;
+        if (recTimer) recTimer.textContent = '00:00';
+        timerInterval = setInterval(() => {
+          seconds++;
+          if (recTimer) recTimer.textContent = formatTime(seconds);
+        }, 1000);
+        hideStatus();
+      } catch (error) {
+        console.error('录音失败:', error);
+        resetVoiceUi('录音没有启动，请检查浏览器麦克风权限。');
+        const message = error && error.name === 'NotAllowedError'
+          ? '录音失败：浏览器没有麦克风权限。'
+          : '录音失败：' + (error.message || '请检查麦克风权限。');
+        showStatus(message, true);
+      }
+    } else {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+      resetVoiceUi();
+    }
+  });
+}
 
 // ========== 发送语音消息到后端 ==========
 async function sendVoiceMessage(audioBlob) {
@@ -3791,10 +3868,11 @@ async function sendVoiceMessage(audioBlob) {
 
   } catch (error) {
     console.error('发送失败:', error);
-    // 移除加载动画，显示错误消息
     removeLoadingMessage(loadingMsgRow);
     addMessage(`发送失败：${error.message}`, false, false);
     showStatus('发送失败：' + error.message, true);
+  } finally {
+    resetVoiceUi();
   }
 }
 
