@@ -454,6 +454,32 @@ svg.ic { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-wid
 .mic-hint { margin-top: 7px; text-align: center; font-size: 12px; color: var(--muted); opacity: .68; }
 
 
+
+/* Voice UI polish */
+.voice-mode-btn.unavailable {
+  color: #9b4a3a;
+  background: #fff0ec;
+  border-color: #f2b9a9;
+}
+.voice-mode-btn.unavailable .ic {
+  opacity: .7;
+}
+.rec-status {
+  position: relative;
+  overflow: hidden;
+}
+.rec-status::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: #d74343;
+}
+.rec-status .rec-info {
+  position: relative;
+  z-index: 1;
+}
+
 /* Main chat controls */
 .header-actions { position: relative; }
 .icon-btn.active { background: var(--surface-soft); color: var(--coral-dark); border-color: var(--coral); }
@@ -3761,12 +3787,28 @@ function voiceUnavailableReason() {
   return '';
 }
 
+
+function updateVoiceAvailabilityUi() {
+  const reason = voiceUnavailableReason();
+  if (!micBtn) return;
+  micBtn.classList.toggle('unavailable', Boolean(reason));
+  micBtn.title = reason || '点击开始录音';
+  if (reason) {
+    if (micBtnLabel) micBtnLabel.textContent = '不可用';
+    if (micHint) micHint.textContent = reason;
+  } else {
+    if (micBtnLabel && !recording) micBtnLabel.textContent = '语音';
+    if (micHint && !recording) micHint.textContent = '点击语音开始录音 · 再次点击结束';
+  }
+}
+
 // ========== 录音功能 ==========
 if (micBtn) {
   micBtn.addEventListener('click', async () => {
     if (!recording) {
       const unavailable = voiceUnavailableReason();
       if (unavailable) {
+        updateVoiceAvailabilityUi();
         showStatus('录音不可用：' + unavailable, true);
         if (micHint) micHint.textContent = unavailable;
         return;
@@ -3819,6 +3861,8 @@ if (micBtn) {
     }
   });
 }
+
+updateVoiceAvailabilityUi();
 
 // ========== 发送语音消息到后端 ==========
 async function sendVoiceMessage(audioBlob) {
